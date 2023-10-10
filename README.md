@@ -4,6 +4,16 @@
 
 前后端通信API：https://docs.qq.com/doc/DYWJYdENDZ3dlQVB1?groupUin=ktbdl7CPcYRZiBZIu631lg%253D%253D
 
+## 开发环境
+
+1、 JDK: jdk-8u381
+
+2、 IDEA: 2023版
+
+3、 maven
+
+4、 mysql8
+
 ## 第一轮迭代功能
 
 ### 用户模块
@@ -24,10 +34,6 @@
 - 进入房间功能
 - 离开房间功能
 - 销毁房间功能
-
-数据库：
-
-?? 是否需要加表
 
 ### 对局功能
 
