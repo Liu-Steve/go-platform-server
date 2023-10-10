@@ -1,9 +1,9 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/goserver?characterEncoding=utf-8&serverTimezone=Asia/Shanghai
-    username: root
-    password: Admin12!
+    url: jdbc:mysql://${MYSQL_IP:localhost}:3306/goserver?characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: ENC(NTYa4maTBpxzkV/dEAY9XA==)
+    password: ENC(KRGubC5Bw6ItS00ZHFXgKtl2vWQecvTK7dCquwyAutI=)
   jpa:
     database: mysql
     hibernate:
@@ -13,3 +13,6 @@ spring:
     name: go-platform-server
 server:
   port: 8084
+jasypt:
+  encryptor:
+    password: ${JASYPT_PASSWORD}
