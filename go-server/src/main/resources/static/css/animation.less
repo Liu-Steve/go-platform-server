@@ -1,0 +1,149 @@
+// 棋子死亡后的收缩成一个小点的特效
+@keyframes blockBoom {
+  0% {
+    transform: scale(1);
+    opacity: 100%;
+  }
+  50% {
+    filter: saturate(0.5);
+    transform: scale(1);
+  }
+  100% {
+    filter: saturate(0);
+    transform: scale(0);
+  }
+}
+
+// 触发吃子震荡波的棋盘格子缩小特效
+@keyframes small {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.7);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+// 棋子落地前的特效
+@keyframes putFx {
+  0% {
+    transform: scale(3);
+    opacity: 0.54;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// 棋盘抖动特效
+@keyframes littleShake {
+  @s: 2px;
+  0% {
+    transform: translateX(0px) translateY(0px);
+  }
+  50% {
+    transform: translateX(@s) translateY(@s);
+  }
+  100% {
+    transform: translateX(0px) translateY(0px);
+  }
+}
+
+// 火石闪烁特效，现在似乎已经弃用
+@keyframes fireFlame {
+  0% {
+    filter: blur(0);
+  }
+  50% {
+    filter: blur(3px);
+  }
+  100% {
+    filter: blur(0);
+  }
+}
+
+/// 火石向左右上下移动的四个特效
+
+
+@L: 30px;
+//@m: 5px;
+@m: 0;
+@keyframes fireStoneLeft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-(@L+@m));
+  }
+}
+
+@keyframes fireStoneRight {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX((@L+@m));
+  }
+}
+
+@keyframes fireStoneTop {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-(@L+@m));
+  }
+}
+
+@keyframes fireStoneDown {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY((@L+@m));
+  }
+}
+
+/// 火石被困住的时候颤抖的特效
+@keyframes bigShake {
+  @s: 1px;
+  @S: 2px;
+  0% {
+    transform: translateX(0px) translateY(0px);
+  }
+  20% {
+    transform: translateX(@s) translateY(@s);
+  }
+  40% {
+    transform: translateX(-@S) translateY(-@S);
+  }
+  60% {
+    transform: translateX(@S) translateY(@S);
+  }
+  80% {
+    transform: translateX(-@s) translateY(-@s);
+  }
+  100% {
+    transform: translateX(0px) translateY(0px);
+  }
+}
+
+/// 棋子气息抖动
+@keyframes lightShake {
+  0% {
+    //filter: blur(15px);
+    transform: scale(1);
+  }
+  50% {
+    //filter: blur(20px);
+    transform: scale(0.5);
+  }
+  100% {
+    //filter: blur(15px);
+    transform: scale(1);
+  }
+}

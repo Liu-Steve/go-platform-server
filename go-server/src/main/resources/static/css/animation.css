@@ -1,0 +1,121 @@
+@keyframes blockBoom {
+  0% {
+    transform: scale(1);
+    opacity: 100%;
+  }
+  50% {
+    filter: saturate(0.5);
+    transform: scale(1);
+  }
+  100% {
+    filter: saturate(0);
+    transform: scale(0);
+  }
+}
+@keyframes small {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.7);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes putFx {
+  0% {
+    transform: scale(3);
+    opacity: 0.54;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes littleShake {
+  0% {
+    transform: translateX(0px) translateY(0px);
+  }
+  50% {
+    transform: translateX(2px) translateY(2px);
+  }
+  100% {
+    transform: translateX(0px) translateY(0px);
+  }
+}
+@keyframes fireFlame {
+  0% {
+    filter: blur(0);
+  }
+  50% {
+    filter: blur(3px);
+  }
+  100% {
+    filter: blur(0);
+  }
+}
+@keyframes fireStoneLeft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-30px);
+  }
+}
+@keyframes fireStoneRight {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(30px);
+  }
+}
+@keyframes fireStoneTop {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-30px);
+  }
+}
+@keyframes fireStoneDown {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(30px);
+  }
+}
+@keyframes bigShake {
+  0% {
+    transform: translateX(0px) translateY(0px);
+  }
+  20% {
+    transform: translateX(1px) translateY(1px);
+  }
+  40% {
+    transform: translateX(-2px) translateY(-2px);
+  }
+  60% {
+    transform: translateX(2px) translateY(2px);
+  }
+  80% {
+    transform: translateX(-1px) translateY(-1px);
+  }
+  100% {
+    transform: translateX(0px) translateY(0px);
+  }
+}
+@keyframes lightShake {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.5);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+/*# sourceMappingURL=animation.css.map */

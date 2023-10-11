@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>围棋平台</title>
+    <link rel="stylesheet" href="css/animation.css">
+    <link rel="stylesheet" href="css/index.css">
+    <style class="normalStyle"></style>
+</head>
+
+<body>
+    <h1>围棋平台</h1>
+
+    <div class="normalGameDiv" style="display: block">
+        <label>玩家颜色设定：</label>
+        <span class="userColorList">
+            <input id="colorInput0" type="color" value="#000000">
+            <input id="colorInput1" type="color" value="#ffffff">
+        </span>
+        <button class="animationSwitch-boardShake">落子棋盘振特效：false</button>
+        <button class="animationSwitch-shockWave">吃子震荡波特效：true</button>
+        <button class="animationSwitch-connect">棋子连接效果：false</button>
+        <div class="table"></div>
+    </div>
+</body>
+
+<script src="./js/tools.js"></script>
+<script src="./js/point.js"></script>
+<script src="./js/gameObject.js"></script>
+<script src="./js/game.js"></script>
+<script src="./js/normalGame.js"></script>
+<script src="./js/index.js"></script>
+
+</html>
