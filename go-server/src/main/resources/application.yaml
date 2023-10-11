@@ -13,6 +13,7 @@ spring:
     name: go-platform-server
 server:
   port: 8084
+  forward-headers-strategy: framework
 jasypt:
   encryptor:
     password: ${JASYPT_PASSWORD}
