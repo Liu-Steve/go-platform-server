@@ -1,8 +1,10 @@
 package com.goplatform.server.controller;
 
+import com.goplatform.server.exception.GoServerException;
 import com.goplatform.server.pojo.domain.Result;
 import com.goplatform.server.pojo.entity.UserEntity;
 import com.goplatform.server.service.UserService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
