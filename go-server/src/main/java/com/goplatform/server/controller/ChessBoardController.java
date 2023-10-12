@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
  * 负责：棋盘的配置，下棋的逻辑，悔棋的逻辑，棋盘当前胜负状态逻辑
  */
 @RestController
+@RequestMapping("${apiPrefix}")
 public class ChessBoardController {
 
     /**

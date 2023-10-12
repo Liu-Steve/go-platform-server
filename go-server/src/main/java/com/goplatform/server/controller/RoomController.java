@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
  * 负责：房间的创建、房间的删除、房间进入
  */
 @RestController
+@RequestMapping("${apiPrefix}")
 public class RoomController {
 
     /**

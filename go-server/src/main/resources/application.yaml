@@ -19,3 +19,6 @@ server:
 jasypt:
   encryptor:
     password: ${JASYPT_PASSWORD}
+apiPrefix: /api # 所有 Controller 共同的前缀
+app:
+  version: @project.version@ # pom.xml 中定义的版本号

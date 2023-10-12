@@ -14,6 +14,7 @@ import javax.annotation.Resource;
  * 负责：用户的登录，注册，修改
  */
 @RestController
+@RequestMapping("${apiPrefix}")
 public class UserController {
     @Resource
     private UserService userService;
