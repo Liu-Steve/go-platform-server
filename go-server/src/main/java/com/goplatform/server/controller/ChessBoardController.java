@@ -1,6 +1,7 @@
 package com.goplatform.server.controller;
 
 import com.goplatform.server.pojo.domain.ChessBoard;
+import com.goplatform.server.pojo.domain.ChessBoardConfig;
 import com.goplatform.server.pojo.domain.ChessDrop;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,16 +13,16 @@ import org.springframework.web.bind.annotation.*;
 public class ChessBoardController {
 
     /**
-     * 配置棋盘信息，棋盘大小，等待时间等
+     * 配置棋盘信息，棋盘大小，等待时间等，并根据配置创建棋盘
      * @param userId 房主Id
      * @param roomId 房间Id
-     * @param chessBoard 棋盘配置
+     * @param chessBoardConfig 棋盘配置
      * @return 配置结果
      */
     @PostMapping("/{userId}/room/{roomId}/chessBoard")
-    public String configChess(@PathVariable(value = "userId") Long userId,
+    public String createChessBoard(@PathVariable(value = "userId") Long userId,
                               @PathVariable(value = "roomId") Long roomId,
-                              @RequestBody ChessBoard chessBoard) {
+                              @RequestBody ChessBoardConfig chessBoardConfig) {
         // TODO 配置棋盘的具体信息，并返回前端具体配置
         return null;
     }

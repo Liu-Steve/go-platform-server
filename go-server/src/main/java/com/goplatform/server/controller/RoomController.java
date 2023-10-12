@@ -16,7 +16,7 @@ public class RoomController {
      * @param room 房间基本信息
      * @return 房间具体信息
      */
-        @PostMapping("/{userId}/room")
+    @PostMapping("/{userId}/room")
     public String createRoom(@PathVariable(value = "userId") Long userId, @RequestBody Room room) {
         // TODO 根据房间配置创建具体房间，安装默认配置创建棋盘，并返回给前端具体房间信息
         return null;
