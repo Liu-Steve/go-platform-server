@@ -3,6 +3,7 @@ package com.goplatform.server.controller;
 import com.goplatform.server.pojo.domain.ChessBoard;
 import com.goplatform.server.pojo.domain.ChessBoardConfig;
 import com.goplatform.server.pojo.domain.ChessDrop;
+import com.goplatform.server.pojo.domain.Result;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -20,9 +21,9 @@ public class ChessBoardController {
      * @return 配置结果
      */
     @PostMapping("/{userId}/room/{roomId}/chessBoard")
-    public String createChessBoard(@PathVariable(value = "userId") Long userId,
-                              @PathVariable(value = "roomId") Long roomId,
-                              @RequestBody ChessBoardConfig chessBoardConfig) {
+    public Result createChessBoard(@PathVariable(value = "userId") Long userId,
+                                   @PathVariable(value = "roomId") Long roomId,
+                                   @RequestBody ChessBoardConfig chessBoardConfig) {
         // TODO 配置棋盘的具体信息，并返回前端具体配置
         return null;
     }
@@ -35,7 +36,7 @@ public class ChessBoardController {
      * @return 更改结果
      */
     @PutMapping ("/{userId}/room/{roomId}/chessBoard")
-    public String changeColor(@PathVariable(value = "userId") Long userId,
+    public Result changeColor(@PathVariable(value = "userId") Long userId,
                               @PathVariable(value = "roomId") Long roomId,
                               @RequestParam(value = "color") Long color) {
         // TODO 更改执子颜色，返回更改结果
@@ -50,7 +51,7 @@ public class ChessBoardController {
      * @return 棋盘信息
      */
     @GetMapping ("/{userId}/room/{roomId}/chessBoard")
-    public String getChessBoardInfo(@PathVariable(value = "userId") Long userId,
+    public Result getChessBoardInfo(@PathVariable(value = "userId") Long userId,
                               @PathVariable(value = "roomId") Long roomId) {
         // TODO 查询当前棋盘信息，返回查询结果
         return null;
@@ -64,7 +65,7 @@ public class ChessBoardController {
      * @return 棋盘信息
      */
     @PostMapping("/{userId}/room/{roomId}/chessBoard/drops")
-    public String dropChess(@PathVariable(value = "userId") Long userId,
+    public Result dropChess(@PathVariable(value = "userId") Long userId,
                             @PathVariable(value = "roomId") Long roomId,
                             @RequestBody ChessDrop chessDrop) {
         // TODO 落子的逻辑，返回棋盘的状态
@@ -83,7 +84,7 @@ public class ChessBoardController {
      * @return 请求结果，是否请求成功
      */
     @GetMapping("{userId}/room/{roomId}/chessBoard/overGameRequest")
-    public String overGameRequest(@PathVariable(value = "userId") Long userId,
+    public Result overGameRequest(@PathVariable(value = "userId") Long userId,
                            @PathVariable(value = "roomId") Long roomId) {
         // TODO 请求结束对局，并等待对手确认，返回请求结果（是否进入等待状态）
         return null;
@@ -96,7 +97,7 @@ public class ChessBoardController {
      * @return 确认结束对局后，计算对局结果
      */
     @GetMapping("{userId}/room/{roomId}/chessBoard/overGameConfirm")
-    public String overGameConfirm(@PathVariable(value = "userId") Long userId,
+    public Result overGameConfirm(@PathVariable(value = "userId") Long userId,
                                   @PathVariable(value = "roomId") Long roomId) {
         // TODO 确认结束对局，并计算对局结果，返回给前端
         return null;

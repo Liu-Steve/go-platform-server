@@ -2,8 +2,10 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${MYSQL_IP:localhost}:3306/goserver?characterEncoding=utf-8&serverTimezone=Asia/Shanghai
-    username: ENC(NTYa4maTBpxzkV/dEAY9XA==)
-    password: ENC(KRGubC5Bw6ItS00ZHFXgKtl2vWQecvTK7dCquwyAutI=)
+#    username: ENC(NTYa4maTBpxzkV/dEAY9XA==)
+    username: root
+#    password: ENC(KRGubC5Bw6ItS00ZHFXgKtl2vWQecvTK7dCquwyAutI=)
+    password: Admin12!
   jpa:
     database: mysql
     hibernate:

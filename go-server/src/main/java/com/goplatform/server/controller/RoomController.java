@@ -1,5 +1,6 @@
 package com.goplatform.server.controller;
 
+import com.goplatform.server.pojo.domain.Result;
 import com.goplatform.server.pojo.domain.Room;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +18,7 @@ public class RoomController {
      * @return 房间具体信息
      */
     @PostMapping("/{userId}/room")
-    public String createRoom(@PathVariable(value = "userId") Long userId, @RequestBody Room room) {
+    public Result createRoom(@PathVariable(value = "userId") Long userId, @RequestBody Room room) {
         // TODO 根据房间配置创建具体房间，安装默认配置创建棋盘，并返回给前端具体房间信息
         return null;
     }
@@ -29,7 +30,7 @@ public class RoomController {
      * @return 进入结果
      */
     @GetMapping("/{userId}/room/{roomId}/enter")
-    public String enterRoom(@PathVariable(value = "userId") Long userId,
+    public Result enterRoom(@PathVariable(value = "userId") Long userId,
                             @PathVariable(value = "roomId") Long roomId) {
         // TODO 进入房间逻辑，返回给前端进入结果
         return null;
@@ -42,7 +43,7 @@ public class RoomController {
      * @return 返回退出结果
      */
     @GetMapping("/{userId}/room/{roomId}/exit")
-    public String exitRoom(@PathVariable(value = "userId") Long userId,
+    public Result exitRoom(@PathVariable(value = "userId") Long userId,
                            @PathVariable(value = "roomId") Long roomId) {
         // TODO 推出房间逻辑，返回给前端进入结果，并将结果保存到历史记录中
         return null;

@@ -1,5 +1,6 @@
 package com.goplatform.server.controller;
 
+import com.goplatform.server.pojo.domain.Result;
 import com.goplatform.server.pojo.entity.UserEntity;
 import com.goplatform.server.service.UserService;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,7 @@ public class UserController {
      * @return 返回注册结果
      */
     @PostMapping("/user/register")
-    public String registerUser(@RequestBody UserEntity user) {
+    public Result registerUser(@RequestBody UserEntity user) {
         // TODO 具体的注册逻辑
         return null;
     }
@@ -32,7 +33,7 @@ public class UserController {
      * @return 登录结果
      */
     @PostMapping("/user/login")
-    public String login(@RequestBody UserEntity user) {
+    public Result login(@RequestBody UserEntity user) {
         // TODO 具体的登录逻辑
         return null;
     }
@@ -43,8 +44,9 @@ public class UserController {
      * @return 返回用户信息（Json格式）
      */
     @GetMapping("/user/{userId}")
-    public String getUserInfo(@PathVariable(value = "userId") Long userId) {
-        return userService.getUserInfoById(userId).toString();
+    public Result getUserInfo(@PathVariable(value = "userId") Long userId) {
+        UserEntity userInfo = userService.getUserInfoById(userId);
+        return Result.ok(userInfo);
     }
 
     /**
@@ -54,7 +56,7 @@ public class UserController {
      * @return 返回更新的结果
      */
     @PutMapping("/user/{userId}")
-    public String updateUserInfo(@PathVariable(value = "userId") Long userId, @RequestBody UserEntity user) {
+    public Result updateUserInfo(@PathVariable(value = "userId") Long userId, @RequestBody UserEntity user) {
         // TODO 更新用户信息，并将更新信息返回给前端
         return null;
     }
