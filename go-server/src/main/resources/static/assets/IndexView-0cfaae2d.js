@@ -1,0 +1,1 @@
+import"./base-e1d6743c.js";import{E as o}from"./el-button-49ea6bde.js";import{_ as n,a,p as c,h as e,f as r,g as s,S as _}from"./index-4b819a66.js";const l={},d=e("div",null," 欢迎来到围棋平台 ",-1);function i(p,f){const t=o;return a(),c("div",null,[d,e("div",null,[r(t,{type:"danger",plain:""},{default:s(()=>[_("退出登录")]),_:1})])])}const h=n(l,[["render",i]]);export{h as default};
