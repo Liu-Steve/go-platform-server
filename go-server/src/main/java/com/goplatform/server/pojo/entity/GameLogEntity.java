@@ -19,7 +19,7 @@ import java.util.Date;
 public class GameLogEntity {
     @Id
     @Column(name = "ID")
-    private Long id;
+    private long id;
 
     @Column(name = "USER_ID")
     private Long userId;
@@ -51,7 +51,5 @@ public class GameLogEntity {
     private Long result;
 
     @Column(name = "BEGIN_DATE")
-    @CreatedDate
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date beginDate;
 }

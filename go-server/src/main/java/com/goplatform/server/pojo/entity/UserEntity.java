@@ -4,23 +4,23 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
+
 
 /**
  * 对应用户表，用于记录用户信息
  */
 @Data
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "GO_USER")
 public class UserEntity {
     @Id
     @Column(name = "ID")
-    private Long id;
+    private long id;
 
     @Column(name = "USERNAME")
     private String username;
@@ -32,7 +32,7 @@ public class UserEntity {
     private String email;
 
     @Column(name = "SALT")
-    private Long salt;
+    private String salt;
 
     /**
      * 用户状态
@@ -41,7 +41,7 @@ public class UserEntity {
      * 2：房间进入者
      */
     @Column(name = "STATUS")
-    private Long status;
+    private int status;
 
     @Column(name = "CREATED_DATE")
     @CreatedDate

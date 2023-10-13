@@ -11,6 +11,12 @@ public class GoServerException extends RuntimeException {
         super();
     }
 
+    public GoServerException(ExceptionEnum exceptionEnum) {
+        super(exceptionEnum.getErrorMessage());
+        this.errorCode = exceptionEnum.getErrorCode();
+        this.errorMessage = exceptionEnum.getErrorMessage();
+    }
+
     public GoServerException(int errorCode, String errorMessage) {
         super(errorMessage);
         this.errorCode = errorCode;

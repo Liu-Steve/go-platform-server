@@ -1,12 +1,12 @@
 -- 创建用户表
 create table GO_USER
 (
-    ID                BIGINT auto_increment,
-    USERNAME          varchar(50) not null,
-    PASSWORD          varchar(50) not null,
-    EMAIL             varchar(50),
-    SALT              BIGINT not null,
-    STATUS            BIGINT not null default 0,
+    ID                BIGINT not null ,
+    USERNAME          varchar(255) not null,
+    PASSWORD          varchar(255) not null,
+    EMAIL             varchar(255),
+    SALT              varchar(255) not null,
+    STATUS            INT not null default 0,
     CREATED_DATE      date,
     UPDATED_DATE      date,
     PRIMARY KEY (ID)
@@ -15,13 +15,13 @@ create table GO_USER
 -- 创建对战表
 create table GO_GAME_LOG
 (
-    ID                  BIGINT auto_increment,
+    ID                  BIGINT not null ,
     USER_ID             BIGINT not null,
     BEGIN_DATE          date,
     OPPONENT_ID         BIGINT not null,
-    OPPONENT_NAME       varchar(50),
+    OPPONENT_NAME       varchar(255),
     COLOR               BIGINT,
-    CHESSBOARD          varchar(500),
+    CHESSBOARD          varchar(65535),
     RESULT              BIGINT not null,
     primary key (ID)
 );

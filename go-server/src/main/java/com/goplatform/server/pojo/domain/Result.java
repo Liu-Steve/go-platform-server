@@ -1,9 +1,7 @@
 package com.goplatform.server.pojo.domain;
 
-import com.alibaba.fastjson.JSON;
 import com.goplatform.server.pojo.constant.Constants;
 import lombok.Data;
-import lombok.val;
 
 @Data
 public class Result {
@@ -16,8 +14,7 @@ public class Result {
         result.setResultCode(Constants.RESULT_OK);
         result.setResultMessage(resultMessage);
         if (obj != null) {
-            String jsonString = JSON.toJSONString(obj);
-            result.setResult(jsonString);
+            result.setResult(obj);
         }
         return  result;
     }

@@ -1,10 +1,9 @@
 package com.goplatform.server.controller;
 
-import com.goplatform.server.exception.GoServerException;
 import com.goplatform.server.pojo.domain.Result;
+import com.goplatform.server.pojo.domain.User;
 import com.goplatform.server.pojo.entity.UserEntity;
 import com.goplatform.server.service.UserService;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -25,9 +24,10 @@ public class UserController {
      * @return 返回注册结果
      */
     @PostMapping("/user/register")
-    public Result registerUser(@RequestBody UserEntity user) {
+    public Result registerUser(@RequestBody User user) {
         // TODO 具体的注册逻辑
-        return null;
+        User userRes = userService.registerUser(user);
+        return Result.ok(userRes);
     }
 
     /**
