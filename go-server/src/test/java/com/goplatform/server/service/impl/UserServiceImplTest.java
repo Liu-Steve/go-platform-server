@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
+import javax.transaction.Transactional;
 
 @SpringBootTest
 public class UserServiceImplTest {
@@ -13,6 +14,7 @@ public class UserServiceImplTest {
     @Resource
     UserService userService;
     @Test
+    @Transactional
     public void registerUser() {
         User user = new User();
         user.setUsername("DragonDJ");
