@@ -2,8 +2,11 @@ package com.goplatform.server.service.impl;
 
 import com.goplatform.server.exception.ExceptionEnum;
 import com.goplatform.server.exception.GoServerException;
+import com.goplatform.server.pojo.constant.Constants;
 import com.goplatform.server.pojo.domain.User;
+import com.goplatform.server.pojo.entity.RoleEntity;
 import com.goplatform.server.pojo.entity.UserEntity;
+import com.goplatform.server.repository.RoleRepository;
 import com.goplatform.server.repository.UserRepository;
 import com.goplatform.server.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +28,8 @@ public class UserServiceImpl implements UserService {
 
     @Resource
     UserRepository userRepository;
+    @Resource
+    RoleRepository roleRepository;
     @Resource
     PasswordEncoder passwordEncoder;    // 在 GoServerApplication 中配置为 BCrypt 算法
 
@@ -50,7 +55,14 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = domainToEntity(user);
         long userId = PublicUtil.getUUID();
         userEntity.setId(userId);
-        userEntity.setPassword(passwordEncoder.encode(user.getPassword())); ;
+        userEntity.setPassword(passwordEncoder.encode(user.getPassword()));
+        // 为用户赋予普通玩家权限
+        RoleEntity role = roleRepository.findRoleEntityByName(Constants.ROLE_PLAYER);
+        if (role == null) {
+            // 此时 player 角色不存在数据库中，可以将 spring.jpa.hibernate.ddl-auto 设为 create 及以上来重建表，注意备份重要数据
+            throw new RuntimeException("找不到 player 角色，请检查数据库完整性");
+        }
+        userEntity.getRoles().add(role);
         // 将用户数据入库
         userRepository.save(userEntity);
         // 将生成的用户信息返回给前端

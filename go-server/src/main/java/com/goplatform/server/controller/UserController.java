@@ -23,7 +23,7 @@ import java.util.HashMap;
  * 负责：用户的登录，注册，修改
  */
 @RestController
-@RequestMapping("${apiPrefix}")
+@RequestMapping("${apiPrefix}/user")
 public class UserController {
 
     @Resource
@@ -41,7 +41,7 @@ public class UserController {
      * @param user 前端传入用户信息
      * @return 返回注册结果
      */
-    @PostMapping("/user/register")
+    @PostMapping("/register")
     public Result registerUser(@RequestBody User user) {
         // 具体的注册逻辑，返回注册的结果
         User userRes = userService.registerUser(user);
@@ -50,10 +50,11 @@ public class UserController {
 
     /**
      * 用户登录接口
+     *
      * @param user 用户信息
      * @return 登录结果
      */
-    @PostMapping("user/login")
+    @PostMapping("/login")
     public Result login(@RequestBody UserLoginVO user) {
         try {
             final UserDetails userDetails = userDetailService.loadUserByUsername(user.getFeature());
@@ -61,7 +62,7 @@ public class UserController {
                     new UsernamePasswordAuthenticationToken(userDetails.getUsername(), user.getPassword()));
             UserEntity userEntity = userService.getUserInfoByUsername(userDetails.getUsername());
             final String token = jwtTokenUtil.generateToken(String.valueOf(userEntity.getId()));
-            return Result.ok("OK", new JSONObject(){{
+            return Result.ok("OK", new JSONObject() {{
                 put("token", token);
                 put("id", userEntity.getId());
             }});
@@ -72,13 +73,14 @@ public class UserController {
 
     /**
      * 获取用户信息接口
+     *
      * @param userId 前端传入用户Id
      * @return 返回用户信息（Json格式）
      */
-    @GetMapping("/user/{userId}")
-    @PreAuthorize("hasAuthority('user/read') and #userId == authentication.principal.id")
+    @GetMapping("/{userId}")
+    @PreAuthorize("hasAuthority('user/read') or #userId == authentication.principal.id")
     public Result getUserInfo(@PathVariable(value = "userId") Long userId) {
-        UserEntity userInfo = userService.getUserInfoById(userId);
+        UserEntity userInfo = userService.getUserInfoById(userId);  // TODO 抹去密码信息
         return Result.ok(userInfo);
     }
 
@@ -86,10 +88,10 @@ public class UserController {
      * 更新用户信息
      *
      * @param userId 需要更新的用户Id
-     * @param user 更新的内容
+     * @param user   更新的内容
      * @return 返回更新的结果
      */
-    @PutMapping("/user/{userId}")
+    @PutMapping("/{userId}")
     @PreAuthorize("hasAuthority('user/write') or #userId == authentication.principal.id")
     public Result updateUserInfo(@PathVariable(value = "userId") Long userId, @RequestBody UserEntity user) {
         // TODO 更新用户信息，并将更新信息返回给前端

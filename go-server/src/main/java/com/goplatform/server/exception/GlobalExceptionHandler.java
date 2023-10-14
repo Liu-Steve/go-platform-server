@@ -2,6 +2,8 @@ package com.goplatform.server.exception;
 
 import com.goplatform.server.pojo.constant.Constants;
 import com.goplatform.server.pojo.domain.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -11,6 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      * 拦截业务异常
@@ -33,6 +37,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public Result GoServerExceptionHandle(HttpServletRequest req, Exception e) {
+        logger.error("服务器发生未知异常: " + e.getMessage());
         return Result.error(Constants.RESULT_UNKNOWN_ERROR, "服务器发生未知异常！");
     }
 }

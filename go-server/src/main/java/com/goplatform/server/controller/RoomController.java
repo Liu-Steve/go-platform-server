@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
  * 负责：房间的创建、房间的删除、房间进入
  */
 @RestController
-@RequestMapping("${apiPrefix}")
+@RequestMapping("${apiPrefix}/room")
 public class RoomController {
 
     /**
@@ -18,7 +18,7 @@ public class RoomController {
      * @param room 房间基本信息
      * @return 房间具体信息
      */
-    @PostMapping("/{userId}/room")
+    @PostMapping("/{userId}")
     public Result createRoom(@PathVariable(value = "userId") Long userId, @RequestBody Room room) {
         // TODO 根据房间配置创建具体房间，安装默认配置创建棋盘，并返回给前端具体房间信息
         return null;
@@ -30,7 +30,7 @@ public class RoomController {
      * @param roomId 房间Id
      * @return 进入结果
      */
-    @GetMapping("/{userId}/room/{roomId}/enter")
+    @GetMapping("/enter/{userId}/{roomId}")
     public Result enterRoom(@PathVariable(value = "userId") Long userId,
                             @PathVariable(value = "roomId") Long roomId) {
         // TODO 进入房间逻辑，返回给前端进入结果
@@ -43,7 +43,7 @@ public class RoomController {
      * @param roomId 房间Id
      * @return 返回退出结果
      */
-    @GetMapping("/{userId}/room/{roomId}/exit")
+    @GetMapping("/exit/{userId}/{roomId}")
     public Result exitRoom(@PathVariable(value = "userId") Long userId,
                            @PathVariable(value = "roomId") Long roomId) {
         // TODO 推出房间逻辑，返回给前端进入结果，并将结果保存到历史记录中
