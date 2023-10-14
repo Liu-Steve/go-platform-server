@@ -1,5 +1,6 @@
 package com.goplatform.server.security;
 
+import com.goplatform.server.pojo.entity.UserEntity;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -49,14 +50,14 @@ public class JwtTokenUtil {
     /**
      * 生成 Token
      *
-     * @param userDetails 用户信息
+     * @param userId 用户 ID
      * @return JWT Token
      */
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(String userId) {
         Map<String, Object> claims = new HashMap<>();   // 可以自由加入信息
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(userDetails.getUsername())
+                .setSubject(userId) // 使用用户 ID 作为 Subject
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY))
                 .signWith(SignatureAlgorithm.HS512, secret)
@@ -66,14 +67,13 @@ public class JwtTokenUtil {
     /**
      * 对 Claims 进行验证
      *
-     * @param claim       JWT claim
-     * @param userDetails 用户信息
+     * @param claim JWT claim
+     * @param user  用户信息
      * @return 是否合法
      */
-    public boolean validateClaim(Claims claim, UserDetails userDetails) {
+    public boolean validateClaim(Claims claim, UserEntity user) {
         //可以验证其他信息，如角色
-        return userDetails != null &&
-                claim.getSubject().equals(userDetails.getUsername())
+        return claim.getSubject().equals(String.valueOf(user.getId()))
                 && !claim.getExpiration().before(new Date());
     }
 

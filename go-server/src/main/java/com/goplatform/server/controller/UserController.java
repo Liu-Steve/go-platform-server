@@ -1,5 +1,6 @@
 package com.goplatform.server.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.goplatform.server.pojo.constant.Constants;
 import com.goplatform.server.pojo.domain.Result;
 import com.goplatform.server.pojo.domain.User;
@@ -15,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 
 /**
  * 用户接口
@@ -57,8 +59,12 @@ public class UserController {
             final UserDetails userDetails = userDetailService.loadUserByUsername(user.getFeature());
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(userDetails.getUsername(), user.getPassword()));
-            final String token = jwtTokenUtil.generateToken(userDetails);
-            return Result.ok("OK", token);
+            UserEntity userEntity = userService.getUserInfoByUsername(userDetails.getUsername());
+            final String token = jwtTokenUtil.generateToken(String.valueOf(userEntity.getId()));
+            return Result.ok("OK", new JSONObject(){{
+                put("token", token);
+                put("id", userEntity.getId());
+            }});
         } catch (Exception e) {
             return Result.error(Constants.RESULT_LOGIN_FAIL, "登陆失败，用户名、邮箱或密码错误");
         }
@@ -70,7 +76,7 @@ public class UserController {
      * @return 返回用户信息（Json格式）
      */
     @GetMapping("/user/{userId}")
-    @PreAuthorize("hasAuthority('user/read')")
+    @PreAuthorize("hasAuthority('user/read') and #userId == authentication.principal.id")
     public Result getUserInfo(@PathVariable(value = "userId") Long userId) {
         UserEntity userInfo = userService.getUserInfoById(userId);
         return Result.ok(userInfo);
@@ -84,7 +90,7 @@ public class UserController {
      * @return 返回更新的结果
      */
     @PutMapping("/user/{userId}")
-    @PreAuthorize("hasAuthority('user/write')")
+    @PreAuthorize("hasAuthority('user/write') or #userId == authentication.principal.id")
     public Result updateUserInfo(@PathVariable(value = "userId") Long userId, @RequestBody UserEntity user) {
         // TODO 更新用户信息，并将更新信息返回给前端
         return Result.ok("更新用户信息成功");

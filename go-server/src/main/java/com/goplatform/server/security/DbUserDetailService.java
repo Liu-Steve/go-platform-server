@@ -35,9 +35,9 @@ public class DbUserDetailService implements UserDetailsService {
     public UserDetails loadUserByUsername(String userFeature) throws UsernameNotFoundException {
         UserEntity user;
         if (userFeature.contains("@")) {
-            user = userService.getUserInfoByEmail(userFeature);
+            user = userService.getUserInfoByEmail(userFeature);     // Email
         } else {
-            user = userService.getUserInfoByUsername(userFeature);
+            user = userService.getUserInfoByUsername(userFeature);  // 用户名
         }
         if (user == null) {
             throw new UsernameNotFoundException("User " + userFeature + " is not found");
