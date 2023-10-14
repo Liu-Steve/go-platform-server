@@ -6,6 +6,8 @@ import com.goplatform.server.pojo.domain.User;
 import com.goplatform.server.pojo.entity.UserEntity;
 import com.goplatform.server.repository.UserRepository;
 import com.goplatform.server.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import com.goplatform.server.utils.PasswordUtil;
 import com.goplatform.server.utils.PublicUtil;
 import com.goplatform.server.utils.ValidUtil;
@@ -20,9 +22,17 @@ import java.util.Date;
 @Service
 @Transactional
 public class UserServiceImpl implements UserService {
+
     @Resource
     UserRepository userRepository;
+    @Resource
+    PasswordEncoder passwordEncoder;    // 在 GoServerApplication 中配置为 BCrypt 算法
+
     @Override
+    public boolean registerUser(UserEntity user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));   // 防拖库
+        userRepository.save(user);
+        return true;
     public User registerUser(User user) {
         // 校验用户名是否符合格式
         if (!ValidUtil.isUsername(user.getUsername())) {
@@ -58,6 +68,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserEntity getUserInfoById(Long id) {
         return userRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public UserEntity getUserInfoByUsername(String username) {
+        return userRepository.findUserEntityByUsername(username);
+    }
+
+    @Override
+    public UserEntity getUserInfoByEmail(String email) {
+        return userRepository.findUserEntityByEmail(email);
     }
 
     private UserEntity domainToEntity(User user) {
