@@ -3,7 +3,6 @@ package com.goplatform.server.security;
 import com.goplatform.server.pojo.entity.RoleEntity;
 import com.goplatform.server.pojo.entity.UserEntity;
 import com.goplatform.server.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;

@@ -1,15 +1,13 @@
 package com.goplatform.server.controller;
 
-import com.goplatform.server.exception.GoServerException;
 import com.goplatform.server.pojo.constant.Constants;
 import com.goplatform.server.pojo.domain.Result;
 import com.goplatform.server.pojo.domain.User;
 import com.goplatform.server.pojo.entity.UserEntity;
-import com.goplatform.server.pojo.entity.UserLoginVO;
+import com.goplatform.server.pojo.domain.UserLoginVO;
 import com.goplatform.server.security.DbUserDetailService;
 import com.goplatform.server.security.JwtTokenUtil;
 import com.goplatform.server.service.UserService;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,7 +15,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
 
 /**
  * 用户接口
@@ -44,7 +41,7 @@ public class UserController {
      */
     @PostMapping("/user/register")
     public Result registerUser(@RequestBody User user) {
-        // TODO 具体的注册逻辑
+        // 具体的注册逻辑，返回注册的结果
         User userRes = userService.registerUser(user);
         return Result.ok(userRes);
     }

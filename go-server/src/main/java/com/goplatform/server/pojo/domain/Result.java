@@ -1,5 +1,6 @@
 package com.goplatform.server.pojo.domain;
 
+import com.goplatform.server.exception.ExceptionEnum;
 import com.goplatform.server.pojo.constant.Constants;
 import lombok.Data;
 
@@ -36,5 +37,9 @@ public class Result {
 
     public static Result error(String resultMessage) {
         return Result.error(Constants.RESULT_UNKNOWN_ERROR, resultMessage);
+    }
+
+    public static Result error(ExceptionEnum exceptionEnum) {
+        return Result.error(exceptionEnum.getErrorCode(), exceptionEnum.getErrorMessage());
     }
 }

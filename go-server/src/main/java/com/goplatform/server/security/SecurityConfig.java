@@ -37,8 +37,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf().disable();  // 关闭 csrf 过滤器
         http.authorizeRequests()
-                .antMatchers("/api/login").permitAll()  // login 接口放行
-                .antMatchers("/api/register").permitAll()  // register 接口放行
+                .antMatchers("/api/user/login").permitAll()  // login 接口放行
+                .antMatchers("/api/user/register").permitAll()  // register 接口放行
                 .antMatchers("/api/hello/**").permitAll()  // hello 测试接口放行
                 .anyRequest().authenticated()   // 其他接口需要认证
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);

@@ -28,37 +28,29 @@ public class UserServiceImpl implements UserService {
     @Resource
     PasswordEncoder passwordEncoder;    // 在 GoServerApplication 中配置为 BCrypt 算法
 
-    @Override
-    public boolean registerUser(UserEntity user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));   // 防拖库
-        userRepository.save(user);
-        return true;
     public User registerUser(User user) {
         // 校验用户名是否符合格式
         if (!ValidUtil.isUsername(user.getUsername())) {
-            throw new GoServerException(ExceptionEnum.USER_USERNAME_INVALID);
+            throw new GoServerException(ExceptionEnum.USER_REGISTER_USERNAME_INVALID);
         }
         // 校验密码是否符合格式
         if (!ValidUtil.isPassword(user.getPassword())) {
-            throw new GoServerException(ExceptionEnum.USER_PASSWORD_INVALID);
+            throw new GoServerException(ExceptionEnum.USER_REGISTER_PASSWORD_INVALID);
         }
         // 校验邮箱是否符合格式
         if (StringUtils.isNotEmpty(user.getEmail()) && !ValidUtil.isEmail(user.getEmail())) {
-            throw new GoServerException(ExceptionEnum.USER_EMAIL_INVALID);
+            throw new GoServerException(ExceptionEnum.USER_REGISTER_EMAIL_INVALID);
         }
         // 校验用户名是否存在
-        UserEntity userFromDB = userRepository.findByUsername(user.getUsername());
+        UserEntity userFromDB = userRepository.findUserEntityByUsername(user.getUsername());
         if (userFromDB != null) {
-            throw new GoServerException(ExceptionEnum.USER_USERNAME_EXIST);
+            throw new GoServerException(ExceptionEnum.USER_REGISTER_USERNAME_EXIST);
         }
         // 生成UUID以及盐值和加密密码
         UserEntity userEntity = domainToEntity(user);
         long userId = PublicUtil.getUUID();
         userEntity.setId(userId);
-        String salt = PasswordUtil.getSalt();
-        String encryptPassword = PasswordUtil.encrypt(user.getPassword(), salt);
-        userEntity.setSalt(salt);
-        userEntity.setPassword(encryptPassword);
+        userEntity.setPassword(passwordEncoder.encode(user.getPassword())); ;
         // 将用户数据入库
         userRepository.save(userEntity);
         // 将生成的用户信息返回给前端
