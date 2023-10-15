@@ -10,6 +10,7 @@ import com.goplatform.server.repository.RoleRepository;
 import com.goplatform.server.repository.UserRepository;
 import com.goplatform.server.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.goplatform.server.utils.PasswordUtil;
 import com.goplatform.server.utils.PublicUtil;
@@ -21,6 +22,7 @@ import javax.annotation.Resource;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -70,6 +72,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User updateUserInfo(long userId, User user) {
+        // 校验用户Id
+        UserEntity userEntity = userRepository.findById(userId).orElse(null);
+        if (userEntity == null) {
+            throw new GoServerException(ExceptionEnum.USER_UPDATE_USERID_INVALID);
+        }
+        // 校验用户名
+        return null;
+    }
+
+    @Override
     public UserEntity getUserInfoById(Long id) {
         return userRepository.findById(id).orElse(null);
     }
@@ -82,6 +95,20 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserEntity getUserInfoByEmail(String email) {
         return userRepository.findUserEntityByEmail(email);
+    }
+
+    @Override
+    public UserEntity getUserInfoByFeature(String feature) {
+        UserEntity user;
+        if (feature.contains("@")) {
+            user = getUserInfoByEmail(feature);
+        } else {
+            user = getUserInfoByUsername(feature);
+        }
+        if (user == null) {
+            throw new GoServerException(ExceptionEnum.USER_LONGIN_FAILED);
+        }
+        return user;
     }
 
     private UserEntity domainToEntity(User user) {

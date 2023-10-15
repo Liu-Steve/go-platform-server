@@ -32,16 +32,8 @@ public class DbUserDetailService implements UserDetailsService {
      * @throws UsernameNotFoundException 找不到用户
      */
     @Override
-    public UserDetails loadUserByUsername(String userFeature) throws UsernameNotFoundException {
-        UserEntity user;
-        if (userFeature.contains("@")) {
-            user = userService.getUserInfoByEmail(userFeature);     // Email
-        } else {
-            user = userService.getUserInfoByUsername(userFeature);  // 用户名
-        }
-        if (user == null) {
-            throw new UsernameNotFoundException("User " + userFeature + " is not found");
-        }
+    public UserDetails loadUserByUsername(String userFeature) {
+        UserEntity user = userService.getUserInfoByFeature(userFeature);
         List<GrantedAuthority> authorities = new ArrayList<>();
         for (RoleEntity role : user.getRoles()) {
             for (String auth : role.getAuthorities()) {

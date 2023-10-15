@@ -13,10 +13,15 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
 
 /**
  * 用户接口
@@ -60,11 +65,12 @@ public class UserController {
             final UserDetails userDetails = userDetailService.loadUserByUsername(user.getFeature());
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(userDetails.getUsername(), user.getPassword()));
-            UserEntity userEntity = userService.getUserInfoByUsername(userDetails.getUsername());
+            UserEntity userEntity = userService.getUserInfoByFeature(userDetails.getUsername());
+            userEntity.setPassword(null);
             final String token = jwtTokenUtil.generateToken(String.valueOf(userEntity.getId()));
             return Result.ok("OK", new JSONObject() {{
                 put("token", token);
-                put("id", userEntity.getId());
+                put("user", userEntity);
             }});
         } catch (Exception e) {
             return Result.error(Constants.RESULT_LOGIN_FAIL, "登陆失败，用户名、邮箱或密码错误");
@@ -81,6 +87,7 @@ public class UserController {
     @PreAuthorize("hasAuthority('user/read') or #userId == authentication.principal.id")
     public Result getUserInfo(@PathVariable(value = "userId") Long userId) {
         UserEntity userInfo = userService.getUserInfoById(userId);  // TODO 抹去密码信息
+        userInfo.setPassword(null);
         return Result.ok(userInfo);
     }
 
@@ -93,8 +100,9 @@ public class UserController {
      */
     @PutMapping("/{userId}")
     @PreAuthorize("hasAuthority('user/write') or #userId == authentication.principal.id")
-    public Result updateUserInfo(@PathVariable(value = "userId") Long userId, @RequestBody UserEntity user) {
-        // TODO 更新用户信息，并将更新信息返回给前端
-        return Result.ok("更新用户信息成功");
+    public Result updateUserInfo(@PathVariable(value = "userId") Long userId, @RequestBody User user) {
+        // 更新用户信息，并将更新信息返回给前端
+        User userRes = userService.updateUserInfo(userId, user);
+        return Result.ok(userRes);
     }
 }

@@ -6,12 +6,18 @@ import com.goplatform.server.pojo.entity.UserEntity;
 
 public interface UserService {
 
-    public User registerUser(User user);
+    User registerUser(User user);
 
-    public UserEntity getUserInfoById(Long id);
+    User updateUserInfo(long userId, User user);
 
-    public UserEntity getUserInfoByUsername(String username);
+    UserEntity getUserInfoById(Long id);
 
-    public UserEntity getUserInfoByEmail(String email);
+    UserEntity getUserInfoByUsername(String username);
+
+    UserEntity getUserInfoByEmail(String email);
+
+    UserEntity getUserInfoByFeature(String feature);
+
+
 
 }
