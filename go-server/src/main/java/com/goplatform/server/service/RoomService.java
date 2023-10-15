@@ -5,9 +5,10 @@ import com.goplatform.server.pojo.domain.Result;
 import com.goplatform.server.pojo.domain.Room;
 import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 
+import javax.annotation.Resource;
+
 public interface RoomService {
-    
-    public ChessBoardController chessBoardController=new ChessBoardController();
+
     
     public Room createRoom(Long userId,Room room);
 

@@ -1,10 +1,10 @@
 package com.goplatform.server.controller;
 
-import com.goplatform.server.pojo.domain.ChessBoard;
-import com.goplatform.server.pojo.domain.ChessBoardConfig;
-import com.goplatform.server.pojo.domain.ChessDrop;
-import com.goplatform.server.pojo.domain.Result;
+import com.goplatform.server.pojo.domain.*;
+import com.goplatform.server.service.ChessBoardService;
 import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
 
 /**
  * 棋盘接口
@@ -13,6 +13,11 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("${apiPrefix}/chessBoard")
 public class ChessBoardController {
+
+
+
+    @Resource
+    private ChessBoardService chessBoardService;
 
     /**
      * 配置棋盘信息，棋盘大小，等待时间等，并根据配置创建棋盘
@@ -26,6 +31,9 @@ public class ChessBoardController {
                                    @PathVariable(value = "roomId") Long roomId,
                                    @RequestBody ChessBoardConfig chessBoardConfig) {
         // TODO 配置棋盘的具体信息，并返回前端具体配置
+        // TODO:找到房间
+        ChessBoard chessBoard=chessBoardService.createChessBoard(userId,roomId,chessBoardConfig);
+        // TODO:返回信息
         return null;
     }
 
@@ -42,6 +50,7 @@ public class ChessBoardController {
                               @RequestParam(value = "color") Long color) {
         // TODO 更改执子颜色，返回更改结果
         // color：0为白色，1为黑色
+        Result colorRes=chessBoardService.changeColor(userId,roomId,color);
         return null;
     }
 
@@ -88,6 +97,7 @@ public class ChessBoardController {
     public Result overGameRequest(@PathVariable(value = "userId") Long userId,
                            @PathVariable(value = "roomId") Long roomId) {
         // TODO 请求结束对局，并等待对手确认，返回请求结果（是否进入等待状态）
+
         return null;
     }
 
