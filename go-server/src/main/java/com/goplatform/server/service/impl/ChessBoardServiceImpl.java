@@ -7,10 +7,11 @@ import com.goplatform.server.pojo.domain.ChessBoardConfig;
 import com.goplatform.server.pojo.domain.Result;
 import com.goplatform.server.pojo.domain.Room;
 import com.goplatform.server.service.ChessBoardService;
-import com.goplatform.server.utils.PublicUtil;
+import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 
+@Service
 public class ChessBoardServiceImpl implements ChessBoardService {
 
 
