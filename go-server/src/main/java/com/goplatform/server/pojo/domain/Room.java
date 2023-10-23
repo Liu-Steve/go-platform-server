@@ -14,6 +14,8 @@ public class Room {
     private Long createUserId;
     // 创建用户名
     private String createUserName;
+    // 第二个用户id
+    private Long secondUserId;
     // 棋盘
     private ChessBoard chessBoard;
     // 棋盘配置
@@ -22,4 +24,6 @@ public class Room {
     private Date createdate;
     // 房间人数
     private int personCount;
+
+
 }
