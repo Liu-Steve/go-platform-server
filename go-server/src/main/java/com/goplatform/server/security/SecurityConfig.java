@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .antMatchers("/api/user/login").permitAll()     // login 接口放行
                 .antMatchers("/api/user/register").permitAll()  // register 接口放行
                 .antMatchers("/api/hello/**").permitAll()       // hello 测试接口放行
+                .antMatchers("/ws/**").authenticated()          // WebSocket 接口需要认证
                 .antMatchers("/api/**").authenticated()         // 其他接口需要认证
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         //添加 jwtRequestFilter 过滤器到 UsernamePasswordAuthenticationFilter 之前
