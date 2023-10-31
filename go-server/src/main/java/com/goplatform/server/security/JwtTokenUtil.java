@@ -30,8 +30,12 @@ public class JwtTokenUtil {
     /**
      * token 的密钥
      */
+    private static String secret;
+
     @Value("${jwt.secret}")
-    private String secret;
+    public void setSecret(String s) {
+        secret = s;
+    }
 
     /**
      * 从 Token 中获得 Claims，不合法会抛出异常
@@ -39,7 +43,7 @@ public class JwtTokenUtil {
      * @param token JWT Token 字符串
      * @return JWT Claims 内容
      */
-    public Claims getClaimFromToken(String token) throws ExpiredJwtException, UnsupportedJwtException,
+    public static Claims getClaimFromToken(String token) throws ExpiredJwtException, UnsupportedJwtException,
             MalformedJwtException, SignatureException, IllegalArgumentException {
         return Jwts.parser()
                 .setSigningKey(secret)
@@ -53,7 +57,7 @@ public class JwtTokenUtil {
      * @param userId 用户 ID
      * @return JWT Token
      */
-    public String generateToken(String userId) {
+    public static String generateToken(String userId) {
         Map<String, Object> claims = new HashMap<>();   // 可以自由加入信息
         return Jwts.builder()
                 .setClaims(claims)
@@ -71,7 +75,7 @@ public class JwtTokenUtil {
      * @param user  用户信息
      * @return 是否合法
      */
-    public boolean validateClaim(Claims claim, UserEntity user) {
+    public static boolean validateClaim(Claims claim, UserEntity user) {
         //可以验证其他信息，如角色
         return claim.getSubject().equals(String.valueOf(user.getId()))
                 && !claim.getExpiration().before(new Date());

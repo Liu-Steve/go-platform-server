@@ -36,8 +36,6 @@ public class UserController {
     @Resource
     private AuthenticationManager authenticationManager;
     @Resource
-    private JwtTokenUtil jwtTokenUtil;
-    @Resource
     private DbUserDetailService userDetailService;
 
     /**
@@ -67,7 +65,7 @@ public class UserController {
                     new UsernamePasswordAuthenticationToken(userDetails.getUsername(), user.getPassword()));
             UserEntity userEntity = userService.getUserInfoByFeature(userDetails.getUsername());
             userEntity.setPassword(null);
-            final String token = jwtTokenUtil.generateToken(String.valueOf(userEntity.getId()));
+            final String token = JwtTokenUtil.generateToken(String.valueOf(userEntity.getId()));
             return Result.ok("OK", new JSONObject() {{
                 put("token", token);
                 put("user", userEntity);
@@ -86,7 +84,7 @@ public class UserController {
     @GetMapping("/{userId}")
     @PreAuthorize("hasAuthority('user/read') or #userId == authentication.principal.id")
     public Result getUserInfo(@PathVariable(value = "userId") Long userId) {
-        UserEntity userInfo = userService.getUserInfoById(userId);  // TODO 抹去密码信息
+        UserEntity userInfo = userService.getUserInfoById(userId);
         userInfo.setPassword(null);
         return Result.ok(userInfo);
     }

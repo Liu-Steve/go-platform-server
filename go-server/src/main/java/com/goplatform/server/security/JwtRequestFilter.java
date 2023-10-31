@@ -12,6 +12,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import javax.annotation.Resource;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -21,15 +22,10 @@ import java.io.IOException;
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-    private final UserDetailsService userDetailsService;
-    private final UserService userService;
-    private final JwtTokenUtil jwtTokenUtil;
-
-    public JwtRequestFilter(UserDetailsService userDetailsService, JwtTokenUtil jwtTokenUtil, UserService userService) {
-        this.userDetailsService = userDetailsService;
-        this.jwtTokenUtil = jwtTokenUtil;
-        this.userService = userService;
-    }
+    @Resource
+    private UserDetailsService userDetailsService;
+    @Resource
+    private UserService userService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -42,14 +38,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
         try {
             final String token = header.substring(7);   // 去除 Bearer 开头
-            Claims claims = jwtTokenUtil.getClaimFromToken(token);  // 解析 Token，不合法会抛出异常
+            Claims claims = JwtTokenUtil.getClaimFromToken(token);  // 解析 Token，不合法会抛出异常
             // 验证声明
             UserEntity user = userService.getUserInfoById(Long.parseLong(claims.getSubject()));
             if (user == null) {
                 throw new Exception("Fail to find " + Long.parseLong(claims.getSubject()) + " user");
             }
             UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
-            if (userDetails != null && jwtTokenUtil.validateClaim(claims, user)) {
+            if (userDetails != null && JwtTokenUtil.validateClaim(claims, user)) {
                 // 创建一个身份令牌放入context中，后面的过滤器可以使用
                 UsernamePasswordAuthenticationToken authenticationToken =
                         new UsernamePasswordAuthenticationToken(
