@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService {
     @Resource
     RoleRepository roleRepository;
     @Resource
-    PasswordEncoder passwordEncoder;    // 在 GoServerApplication 中配置为 BCrypt 算法
+    PasswordEncoder passwordEncoder;    // 在 PasswordConfig 中配置为 BCrypt 算法
 
     public User registerUser(User user) {
         // 校验用户名是否符合格式
