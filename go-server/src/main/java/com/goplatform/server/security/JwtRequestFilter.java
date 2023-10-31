@@ -30,19 +30,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        final String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-        // 未找到 JWT Token
-        if (header == null || !header.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
         try {
-            final String token = header.substring(7);   // 去除 Bearer 开头
-            Claims claims = JwtTokenUtil.getClaimFromToken(token);  // 解析 Token，不合法会抛出异常
+            String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+            String token = JwtTokenUtil.getTokenFromHeader(header);
+            Claims claims = JwtTokenUtil.getClaimFromToken(token);
+            long userId = JwtTokenUtil.getUserIdFromClaim(claims);
             // 验证声明
-            UserEntity user = userService.getUserInfoById(Long.parseLong(claims.getSubject()));
+            UserEntity user = userService.getUserInfoById(userId);
             if (user == null) {
-                throw new Exception("Fail to find " + Long.parseLong(claims.getSubject()) + " user");
+                throw new Exception("Fail to find " + userId + " user");
             }
             UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
             if (userDetails != null && JwtTokenUtil.validateClaim(claims, user)) {

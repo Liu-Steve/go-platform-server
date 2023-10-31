@@ -9,7 +9,6 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -38,6 +37,17 @@ public class JwtTokenUtil {
     }
 
     /**
+     * 从 JWT Claims 中获取用户 ID
+     *
+     * @param claims JWT Claims
+     * @return 用户 ID
+     * @throws NumberFormatException 获取 ID 失败
+     */
+    public static long getUserIdFromClaim(Claims claims) throws NumberFormatException {
+        return Long.parseLong(claims.getSubject());
+    }
+
+    /**
      * 从 Token 中获得 Claims，不合法会抛出异常
      *
      * @param token JWT Token 字符串
@@ -49,6 +59,19 @@ public class JwtTokenUtil {
                 .setSigningKey(secret)
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    /**
+     * 从请求头 Authorization 获取 JWT Token
+     *
+     * @param header 请求头中 Authorization 对应的字符串
+     * @return JWT Token
+     */
+    public static String getTokenFromHeader(String header) {
+        if (header == null || !header.startsWith("Bearer ")) {
+            return null;
+        }
+        return header.substring(7);
     }
 
     /**

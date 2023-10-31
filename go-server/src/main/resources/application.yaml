@@ -22,3 +22,7 @@ app:
   version: @project.version@ # pom.xml 中定义的版本号
 jwt:
   secret: ENC(N3fG/db7SlKPsmqxBnSbUwG65fF+dNsTFisJ8ikq4r+7Azjcozrt++HFhk1DOL0xwfIlHgN8p0tYoc7FkuKd/ROuhb4cuu1+dC81dHRApu9qCuoxrZ2YWHX06yVZLxLaSH1zf68Lbs4oyeE7/x2C5oR4HL5Nh8peUkdhqse7XXryFSQ6BmpDZ6jCwWYFfdZi)
+logging:
+  level:
+    root: info
+    com.goplatform.server: debug
