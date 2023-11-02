@@ -76,7 +76,7 @@ public class UserServiceImpl implements UserService {
         // 校验用户Id
         UserEntity userEntity = userRepository.findById(userId).orElse(null);
         if (userEntity == null) {
-            throw new GoServerException(ExceptionEnum.USER_UPDATE_USERID_INVALID);
+            throw new GoServerException(ExceptionEnum.USER_USERID_INVALID);
         }
         // 校验用户名
         return null;

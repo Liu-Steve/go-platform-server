@@ -7,7 +7,6 @@ import lombok.Data;
 @Data
 public class ChessBoard {
     //TODO 棋盘属性确定
-
     // 棋盘Id
     private Long chessBoardId;
     // 用于表示具体棋盘

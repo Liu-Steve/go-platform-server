@@ -1,18 +1,19 @@
 package com.goplatform.server.service;
 
-import com.goplatform.server.controller.ChessBoardController;
-import com.goplatform.server.pojo.domain.Result;
 import com.goplatform.server.pojo.domain.Room;
-import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 
-import javax.annotation.Resource;
+import java.util.Collection;
 
 public interface RoomService {
 
     
-    public Room createRoom(Long userId,Room room);
+    Room createRoom(Long userId);
 
-    Result enterRoom(Long userId, Long roomId);
+    Room enterRoom(Long userId, Long roomId);
 
-    Result exitRoom(Long userId, Long roomId);
+    Room exitRoom(Long userId, Long roomId);
+
+    Collection<Room> listRoom();
+
+    Room findRoomById(Long roomId);
 }

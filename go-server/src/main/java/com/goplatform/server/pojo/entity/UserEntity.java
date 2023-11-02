@@ -26,6 +26,10 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "GO_USER")
 public class UserEntity {
+    public static final int USER_STATUS_FREE = 0;
+
+    public static final int USER_STATUS_BUSY = 1;
+
     @Id
     @Column(name = "ID")
     private long id;
@@ -42,8 +46,7 @@ public class UserEntity {
     /**
      * 用户状态
      * 0：空闲
-     * 1：房间创建者
-     * 2：房间进入者
+     * 1：在房间中
      */
     @Column(name = "STATUS")
     private int status;
