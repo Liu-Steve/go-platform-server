@@ -13,6 +13,7 @@ import java.rmi.server.RemoteRef;
 /**
  * 房间接口
  * 负责：房间的创建、房间的删除、房间进入
+ * 创建房间和退出房间都应该建立websocket连接
  */
 @RestController
 @RequestMapping("${apiPrefix}/room")

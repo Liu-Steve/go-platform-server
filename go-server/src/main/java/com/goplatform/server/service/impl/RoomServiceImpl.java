@@ -1,5 +1,6 @@
 package com.goplatform.server.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.goplatform.server.exception.ExceptionEnum;
 import com.goplatform.server.exception.GoServerException;
 import com.goplatform.server.manager.Scheduler;
@@ -9,10 +10,15 @@ import com.goplatform.server.repository.UserRepository;
 import com.goplatform.server.service.ChessBoardService;
 import com.goplatform.server.service.RoomService;
 import com.goplatform.server.utils.PublicUtil;
+import com.goplatform.server.websocket.ChessWebSocketHandler;
+import com.goplatform.server.websocket.WebSocketResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.transaction.Transactional;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Objects;
@@ -22,7 +28,7 @@ import java.util.Objects;
 @Transactional
 public class RoomServiceImpl implements RoomService {
 
-
+    private static final Logger logger = LoggerFactory.getLogger(RoomServiceImpl.class);
     @Resource
     private ChessBoardService chessBoardService;
     @Resource
@@ -72,6 +78,8 @@ public class RoomServiceImpl implements RoomService {
         room.setPersonCount(2);
         // 更新用户状态
         userRepository.updateStatusByUserId(UserEntity.USER_STATUS_BUSY, userId);
+        // 通知房主
+        notifyHostByWS(room, WebSocketResult.ROOM_ENTER);
         return room;
     }
 
@@ -89,6 +97,7 @@ public class RoomServiceImpl implements RoomService {
         // TODO:鉴权：用户是否存在并且在房间中
         UserEntity userEntity = checkAndGetUser(userId, UserEntity.USER_STATUS_BUSY);
         Room room = scheduler.getRoom(roomId);
+        Room resultRoom = null;
         if (!Objects.equals(room.getCreateUserId(), userId) && !Objects.equals(room.getSecondUserId(), userId)) {
             throw new GoServerException(ExceptionEnum.ROOM_USER_NOT_INSIDE, userEntity.getUsername(), roomId);
         }
@@ -96,7 +105,6 @@ public class RoomServiceImpl implements RoomService {
         // 如果房间只有一个人，则删除房间
         if (room.getPersonCount() == 1) {
             scheduler.removeRoom(roomId);
-            return null;
         }
 
         // 如果房间有两个人，非房主退出，正常维护
@@ -108,7 +116,7 @@ public class RoomServiceImpl implements RoomService {
             room.setChessBoard(null);
             // 更新用户状态
             userRepository.updateStatusByUserId(UserEntity.USER_STATUS_FREE, userId);
-            return room;
+            resultRoom =  room;
         }
 
         // 如果房间有两个人，房主退出房间，则另一个人升级为房主
@@ -122,10 +130,24 @@ public class RoomServiceImpl implements RoomService {
             room.setPersonCount(1);
             room.setChessBoardConfig(null);
             room.setChessBoard(null);
-            return room;
+            resultRoom = room;
         }
 
-        return null;
+        // 通知房主
+        if (resultRoom != null) {
+            notifyHostByWS(resultRoom, WebSocketResult.ROOM_EXIT);
+        }
+        return resultRoom;
+    }
+
+    private void notifyHostByWS(Room room, int mode) {
+        WebSocketResult result = WebSocketResult.ok(mode, room);
+        String roomMsg = JSON.toJSONString(result);
+        try {
+            ChessWebSocketHandler.sendMessage(room.getCreateUserId(), roomMsg);
+        } catch (GoServerException | IOException e) {
+            logger.error("can not notice host: {}, websocket not connect", room.getCreateUserName());
+        }
     }
 
     @Override

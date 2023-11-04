@@ -1,11 +1,17 @@
 package com.goplatform.server.service.impl;
 
+import com.goplatform.server.exception.ExceptionEnum;
+import com.goplatform.server.exception.GoServerException;
+import com.goplatform.server.manager.Scheduler;
 import com.goplatform.server.pojo.constant.ChessBoardStatus;
 import com.goplatform.server.pojo.constant.Player;
 import com.goplatform.server.pojo.domain.*;
+import com.goplatform.server.repository.UserRepository;
 import com.goplatform.server.service.ChessBoardService;
+import com.goplatform.server.utils.PublicUtil;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Queue;
@@ -13,22 +19,45 @@ import java.util.Queue;
 @Service
 public class ChessBoardServiceImpl implements ChessBoardService {
 
-
+    @Resource
+    private UserRepository userRepository;
+    @Resource
+    private Scheduler scheduler;
+    @Override
     public ChessBoard createChessBoard(Long userId, long roomID, ChessBoardConfig chessBoardConfig) {
 
+        // 1、判断用户是否有权限来创建棋盘
+        PublicUtil.checkUserIdValid(userId, userRepository);
+        Room room = scheduler.getRoom(roomID);
+        if (!room.getCreateUserId().equals(userId)) {
+            throw new GoServerException(ExceptionEnum.CHESS_USER_PERMISSION_DENY);
+        }
+        // 2、补全棋盘配置，并放到room里面
+        ChessBoardConfig config = initChessBoardConfig(chessBoardConfig, room);
+        // 3、初始化棋盘
         ChessBoard chessBoard=new ChessBoard();
         chessBoard.setChessBoardId(chessBoardConfig.getChessBoardId());
         chessBoard.setStatus(ChessBoardStatus.Going);
         chessBoard.setNowPlayer(Player.BLACK_PLAYER);
 
-        // TODO:找到room
-        Room room=null;
-        room.setChessBoardConfig(chessBoardConfig);
-        room.setChessBoard(chessBoard);
+//        // TODO:找到room
+//        Room room=null;
+//        room.setChessBoardConfig(chessBoardConfig);
+//        room.setChessBoard(chessBoard);
 
         return chessBoard;
     }
 
+    private ChessBoardConfig initChessBoardConfig(ChessBoardConfig chessBoardConfig, Room room) {
+        ChessBoardConfig config = new ChessBoardConfig();
+        config.setChessBoardId(PublicUtil.getUUID());
+        config.setRoomId(room.getRoomId());
+        config.setWhitePlayerId(chessBoardConfig.getWhitePlayerId());
+        config.setBlackPlayerId(chessBoardConfig.getBlackPlayerId());
+        config.setTimeToDrop(chessBoardConfig.getTimeToDrop());
+        config.setBoardSize(chessBoardConfig.getBoardSize());
+        return config;
+    }
 
 
     public Result enterChessBoard(Long userId, Long roomId) {

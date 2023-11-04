@@ -1,5 +1,7 @@
 package com.goplatform.server.websocket;
 
+import com.goplatform.server.exception.ExceptionEnum;
+import com.goplatform.server.exception.GoServerException;
 import com.goplatform.server.security.JwtTokenUtil;
 import io.jsonwebtoken.Claims;
 import org.slf4j.Logger;
@@ -71,6 +73,9 @@ public class ChessWebSocketHandler extends AbstractWebSocketHandler {
      * @throws IOException 发送异常，需检查连接状态
      */
     public static void sendMessage(long userId, String message) throws IOException {
+        if (!sessionMap.containsKey(userId) || sessionMap.get(userId) == null) {
+            throw new GoServerException(ExceptionEnum.CHESS_SOCKET_CONNECTION_NOT_EXIST);
+        }
         WebSocketSession session = sessionMap.get(userId);
         session.sendMessage(new TextMessage(message));
     }

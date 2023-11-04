@@ -13,16 +13,15 @@ import javax.annotation.Resource;
 @RestController
 @RequestMapping("${apiPrefix}/chessBoard")
 public class ChessBoardController {
-
-
-
     @Resource
     private ChessBoardService chessBoardService;
 
     /**
-     * 配置棋盘信息，棋盘大小，等待时间等，并根据配置创建棋盘
-     * @param userId 房主Id
-     * @param roomId 房间Id
+     * 配置棋盘信息，棋盘大小，等待时间等，并根据配置创建棋盘，此时黑白两方都应该建立websocket连接
+     * 创建完棋盘后，开始游戏，白方先走并计时
+     *
+     * @param userId           房主Id
+     * @param roomId           房间Id
      * @param chessBoardConfig 棋盘配置
      * @return 配置结果
      */
@@ -30,47 +29,55 @@ public class ChessBoardController {
     public Result createChessBoard(@PathVariable(value = "userId") Long userId,
                                    @PathVariable(value = "roomId") Long roomId,
                                    @RequestBody ChessBoardConfig chessBoardConfig) {
-        // TODO 配置棋盘的具体信息，并返回前端具体配置
-        // TODO:找到房间
-        ChessBoard chessBoard=chessBoardService.createChessBoard(userId,roomId,chessBoardConfig);
+        /*
+            TODO:
+            1、在此之前黑白两方前端要与后端建立websocket通信
+            2、根据前端信息初始化棋盘和棋盘配置
+            3、通过websocket通知白方落子，黑方等待，并更新棋盘状态
+            4、为白方初始化计时器任务
+         */
+        ChessBoard chessBoard = chessBoardService.createChessBoard(userId, roomId, chessBoardConfig);
         // TODO:返回信息
         return null;
     }
 
     /**
      * 更改执子颜色
+     *
      * @param userId 房主Id
      * @param roomId 房间Id
-     * @param color 房主执子颜色
+     * @param color  房主执子颜色
      * @return 更改结果
      */
-    @PutMapping ("/{userId}/{roomId}")
+    @PutMapping("/{userId}/{roomId}")
     public Result changeColor(@PathVariable(value = "userId") Long userId,
                               @PathVariable(value = "roomId") Long roomId,
                               @RequestParam(value = "color") Long color) {
         // TODO 更改执子颜色，返回更改结果
         // color：0为白色，1为黑色
-        Result colorRes=chessBoardService.changeColor(userId,roomId,color);
+        Result colorRes = chessBoardService.changeColor(userId, roomId, color);
         return null;
     }
 
     /**
      * 查看当前棋盘信息
+     *
      * @param userId 房主Id
      * @param roomId 房间Id
      * @return 棋盘信息
      */
-    @GetMapping ("/{userId}/{roomId}")
+    @GetMapping("/{userId}/{roomId}")
     public Result getChessBoardInfo(@PathVariable(value = "userId") Long userId,
-                              @PathVariable(value = "roomId") Long roomId) {
+                                    @PathVariable(value = "roomId") Long roomId) {
         // TODO 查询当前棋盘信息，返回查询结果
         return null;
     }
 
     /**
      * 落子逻辑
-     * @param userId 落子用户Id
-     * @param roomId 房间Id
+     *
+     * @param userId    落子用户Id
+     * @param roomId    房间Id
      * @param chessDrop 落子信息
      * @return 棋盘信息
      */
@@ -89,13 +96,14 @@ public class ChessBoardController {
 
     /**
      * 请求结束对局
+     *
      * @param userId 请求用户Id
      * @param roomId 房间Id
      * @return 请求结果，是否请求成功
      */
     @GetMapping("/over_request/{userId}/{roomId}")
     public Result overGameRequest(@PathVariable(value = "userId") Long userId,
-                           @PathVariable(value = "roomId") Long roomId) {
+                                  @PathVariable(value = "roomId") Long roomId) {
         // TODO 请求结束对局，并等待对手确认，返回请求结果（是否进入等待状态）
 
         return null;
@@ -103,6 +111,7 @@ public class ChessBoardController {
 
     /**
      * 确认结束对局
+     *
      * @param userId 请求用户Id
      * @param roomId 房间Id
      * @return 确认结束对局后，计算对局结果
