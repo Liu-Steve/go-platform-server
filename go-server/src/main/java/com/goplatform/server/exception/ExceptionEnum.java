@@ -11,7 +11,10 @@ public enum ExceptionEnum {
     ROOM_ID_INVALID(11001, "房间id: %s无效！"),
     ROOM_USER_NOT_INSIDE(11002, "用户：%s 不在房间%s 中！"),
     CHESS_SOCKET_CONNECTION_NOT_EXIST(12001, "用户未建立websocket连接"),
-    CHESS_USER_PERMISSION_DENY(12002, "用户无权限创建房间");
+    CHESS_USER_PERMISSION_DENY(12002, "用户：%s 无权限执行操作：%s"),
+    CHESS_DROP_FAILED(12003, "落子失败"),
+    CHESS_ROOM_NOT_FILL(12004, "开始棋局失败，房间未满"),
+    CHESS_ROOM_NOT_INIT(12005, "棋局还未开始");
     private int errorCode;
     private String errorMessage;
 

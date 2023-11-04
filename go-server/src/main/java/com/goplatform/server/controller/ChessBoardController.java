@@ -31,7 +31,6 @@ public class ChessBoardController {
                                    @PathVariable(value = "roomId") Long roomId,
                                    @RequestBody ChessBoardConfig chessBoardConfig) {
         /*
-            TODO:
             1、在此之前黑白两方前端要与后端建立websocket通信
             2、根据前端信息初始化棋盘和棋盘配置
             3、通过websocket通知白方落子，黑方等待，并更新棋盘状态
@@ -40,24 +39,6 @@ public class ChessBoardController {
         Room room = chessBoardService.createChessBoard(userId, roomId, chessBoardConfig);
         // TODO:返回信息
         return Result.ok(room);
-    }
-
-    /**
-     * 更改执子颜色
-     *
-     * @param userId 房主Id
-     * @param roomId 房间Id
-     * @param color  房主执子颜色
-     * @return 更改结果
-     */
-    @PutMapping("/{userId}/{roomId}")
-    public Result changeColor(@PathVariable(value = "userId") Long userId,
-                              @PathVariable(value = "roomId") Long roomId,
-                              @RequestParam(value = "color") Long color) {
-        // TODO 更改执子颜色，返回更改结果
-        // color：0为白色，1为黑色
-        Result colorRes = chessBoardService.changeColor(userId, roomId, color);
-        return null;
     }
 
     /**
@@ -92,7 +73,8 @@ public class ChessBoardController {
          * 2、更新棋盘
          * 3、下满了
          */
-        return null;
+        ChessBoard chessBoard = chessBoardService.dropChess(userId, roomId, chessDrop);
+        return Result.ok(chessBoard);
     }
 
     /**

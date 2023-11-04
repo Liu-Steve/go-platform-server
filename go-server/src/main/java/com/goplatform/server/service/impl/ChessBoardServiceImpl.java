@@ -28,13 +28,16 @@ public class ChessBoardServiceImpl implements ChessBoardService {
     private Scheduler scheduler;
 
     @Override
-    public Room createChessBoard(Long userId, long roomId, ChessBoardConfig chessBoardConfig) {
+    public Room createChessBoard(Long userId, Long roomId, ChessBoardConfig chessBoardConfig) {
 
         // 1、判断用户是否有权限来创建棋盘
         PublicUtil.checkUserIdValid(userId, userRepository);
         Room room = scheduler.getRoom(roomId);
         if (!room.getCreateUserId().equals(userId)) {
-            throw new GoServerException(ExceptionEnum.CHESS_USER_PERMISSION_DENY);
+            throw new GoServerException(ExceptionEnum.CHESS_USER_PERMISSION_DENY, userId, "创建棋盘");
+        }
+        if (room.getPersonCount() != 2) {
+            throw new GoServerException(ExceptionEnum.CHESS_ROOM_NOT_FILL);
         }
 
         // 2、补全棋盘配置，并放到room里面
@@ -53,63 +56,61 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         return room;
     }
 
-
-
-    public Result enterChessBoard(Long userId, Long roomId) {
-
-        // TODO:找到房间
-        Room room = null;
-        ChessBoardConfig chessBoardConfig = room.getChessBoardConfig();
-        if (Objects.equals(chessBoardConfig.getBlackPlayerId(), null)) {
-            // 黑方没人
-            chessBoardConfig.setBlackPlayerId(userId);
-        } else if (Objects.equals(chessBoardConfig.getWhitePlayerId(), null)) {
-            // 黑方没人
-            chessBoardConfig.setWhitePlayerId(userId);
+    /**
+     * 下棋操作
+     *
+     * @param userId    下棋用户
+     * @param roomId    下棋房间
+     * @param chessDrop 落子信息
+     * @return
+     */
+    @Override
+    public ChessBoard dropChess(Long userId, Long roomId, ChessDrop chessDrop) {
+        /*
+         * 1、校验用户是否有权限下棋（在房间中，轮到自己）
+         * 2、具体下棋逻辑
+         * 3、WS通知自己停止，通知对手下棋
+         */
+        // 1、校验用户是否有权限下棋（在房间中，轮到自己）
+        PublicUtil.checkUserIdValid(userId, userRepository);
+        Room room = scheduler.getRoom(roomId);
+        if (room.getChessBoardConfig() == null || room.getChessBoard() == null) {
+            throw new GoServerException(ExceptionEnum.CHESS_ROOM_NOT_INIT);
         }
-        // TODO:返回信息
-        return null;
+        int type = checkDropPermission(userId, room);
+        // 2、具体下棋逻辑
+        int r = chessDrop.getDropPosition().get(0);
+        int c = chessDrop.getDropPosition().get(1);
+        if (!doOneMove(r, c, type, room.getChessBoard())) {
+            throw new GoServerException(ExceptionEnum.CHESS_DROP_FAILED);
+        }
+        // 3、WS通知自己停止，通知对手下棋
+        if (type == ChessBoard.BLACK) {
+            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), room.getChessBoard(), WebSocketResult.CHESS_WAIT);
+            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), room.getChessBoard(), WebSocketResult.CHESS_START);
+        } else if (type == ChessBoard.WHITE) {
+            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), room.getChessBoard(), WebSocketResult.CHESS_START);
+            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), room.getChessBoard(), WebSocketResult.CHESS_WAIT);
+        }
+        return room.getChessBoard();
     }
 
-    public Result exitChessBoard(Long userId, Long roomId) {
-        Room room = null;
-        ChessBoardConfig chessBoardConfig = room.getChessBoardConfig();
-        if (Objects.equals(chessBoardConfig.getBlackPlayerId(), userId)) {
-            // 黑方没人
-            chessBoardConfig.setBlackPlayerId(null);
-        } else if (Objects.equals(chessBoardConfig.getWhitePlayerId(), userId)) {
-            // 黑方没人
-            chessBoardConfig.setWhitePlayerId(null);
+    private int checkDropPermission(Long userId, Room room) {
+        if (!Objects.equals(room.getCreateUserId(), userId) && !Objects.equals(room.getSecondUserId(), userId)) {
+            throw new GoServerException(ExceptionEnum.CHESS_USER_PERMISSION_DENY, userId, "落子");
         }
-        // TODO:返回信息
-        return null;
+        // 判断当前用户是黑棋还是白棋
+        if (room.getChessBoardConfig().getWhitePlayerId().equals(userId)
+                && room.getChessBoard().getNowPlayer().equals(Player.WHITE_PLAYER)) {
+            return ChessBoard.WHITE;
+        }
+        if (room.getChessBoardConfig().getBlackPlayerId().equals(userId)
+                && room.getChessBoard().getNowPlayer().equals(Player.BLACK_PLAYER)) {
+            return ChessBoard.BLACK;
+        }
+        throw new GoServerException(ExceptionEnum.CHESS_USER_PERMISSION_DENY, userId, "落子");
     }
 
-    public Result changeColor(Long userId, Long roomId, Long color) {
-
-        // TODO:找到房间
-        Room room = null;
-        ChessBoardConfig chessBoardConfig = room.getChessBoardConfig();
-        if (Objects.equals(color, Player.WHITE_PLAYER)) {
-            if (Objects.equals(chessBoardConfig.getWhitePlayerId(), userId)) {
-
-            } else {
-                Long tempId = chessBoardConfig.getWhitePlayerId();
-                chessBoardConfig.setWhitePlayerId(userId);
-                chessBoardConfig.setBlackPlayerId(tempId);
-            }
-        } else if (Objects.equals(color, Player.BLACK_PLAYER)) {
-            if (Objects.equals(chessBoardConfig.getBlackPlayerId(), userId)) {
-
-            } else {
-                Long tempId = chessBoardConfig.getBlackPlayerId();
-                chessBoardConfig.setWhitePlayerId(tempId);
-                chessBoardConfig.setBlackPlayerId(userId);
-            }
-        }
-        // TODO:返回信息
-        return null;
-    }
 
     private static final int[] dr = {-1, 0, 0, 1};
     private static final int[] dc = {0, -1, 1, 0};
@@ -147,7 +148,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
     }
 
     private void flushFlags(ChessBoard board) {
-        for (int i = 0; i < board.getBoardSize(); i++) {
+        for (int i = 0; i < board.getBoardSize(); i ++ ) {
             Arrays.fill(board.getBoardFlag()[i], false);
         }
     }
@@ -214,21 +215,29 @@ public class ChessBoardServiceImpl implements ChessBoardService {
     }
 
     public boolean doOneMove(int r, int c, int type, ChessBoard board) {
-        if (type != turnPlayerIntoChessboardColor(board.getNowPlayer())) {
-            // not this player's turn to move
-            return false;
-        }
-        if (board.getBoard()[r][c] != ChessBoard.EMPTY) {
-            // this pos has been taken
-            return false;
+        int[][] boardSave = new int[board.getBoardSize()][board.getBoardSize()];
+        for (int i = 0; i < board.getBoardSize(); i++) {
+            boardSave[i] = Arrays.copyOf(board.getBoard()[i], board.getBoardSize());
         }
         boolean isValidMove = false;
-        board.getBoard()[r][c] = type;
-        if (tryTake(r, c, board)) {
-            isValidMove = true;
-        }
-        if (!isNoLiberty(r, c, board)) {
-            isValidMove = true;
+        try {
+            if (type != turnPlayerIntoChessboardColor(board.getNowPlayer())) {
+                // not this player's turn to move
+                return false;
+            }
+            if (board.getBoard()[r][c] != ChessBoard.EMPTY) {
+                // this pos has been taken
+                return false;
+            }
+            board.getBoard()[r][c] = type;
+            if (tryTake(r, c, board)) {
+                isValidMove = true;
+            }
+            if (!isNoLiberty(r, c, board)) {
+                isValidMove = true;
+            }
+        } catch (Exception e) {
+            board.setBoard(boardSave);
         }
         if (isValidMove) {
             board.setNowPlayer(

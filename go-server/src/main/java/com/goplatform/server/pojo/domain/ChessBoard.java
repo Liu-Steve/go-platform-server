@@ -31,6 +31,7 @@ public class ChessBoard {
         boardSize = config.getBoardSize();
         chessBoardId = config.getChessBoardId();
         board = new int[boardSize][boardSize];
+        boardFlag = new boolean[boardSize][boardSize];
         for (int i = 0; i < boardSize; i ++ ) {
             Arrays.fill(board[i], ChessBoard.EMPTY);
         }
