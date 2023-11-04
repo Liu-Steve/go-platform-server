@@ -1,5 +1,6 @@
 package com.goplatform.server.websocket;
 
+import com.alibaba.fastjson.JSON;
 import com.goplatform.server.exception.ExceptionEnum;
 import com.goplatform.server.exception.GoServerException;
 import com.goplatform.server.security.JwtTokenUtil;
@@ -63,6 +64,16 @@ public class ChessWebSocketHandler extends AbstractWebSocketHandler {
         logger.warn("Connection error: " + userId);
         logger.warn(Arrays.toString(exception.getStackTrace()));
         sessionMap.remove(userId);
+    }
+
+    public static void sendResult(Long userId, Object obj, int mode) {
+        WebSocketResult result = WebSocketResult.ok(mode, obj);
+        String roomMsg = JSON.toJSONString(result);
+        try {
+            ChessWebSocketHandler.sendMessage(userId, roomMsg);
+        } catch (GoServerException | IOException e) {
+            logger.error("can not notice user: {}, websocket not connect", userId);
+        }
     }
 
     /**

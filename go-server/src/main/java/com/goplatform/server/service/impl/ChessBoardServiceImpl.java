@@ -9,9 +9,12 @@ import com.goplatform.server.pojo.domain.*;
 import com.goplatform.server.repository.UserRepository;
 import com.goplatform.server.service.ChessBoardService;
 import com.goplatform.server.utils.PublicUtil;
+import com.goplatform.server.websocket.ChessWebSocketHandler;
+import com.goplatform.server.websocket.WebSocketResult;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Queue;
@@ -23,53 +26,44 @@ public class ChessBoardServiceImpl implements ChessBoardService {
     private UserRepository userRepository;
     @Resource
     private Scheduler scheduler;
+
     @Override
-    public ChessBoard createChessBoard(Long userId, long roomID, ChessBoardConfig chessBoardConfig) {
+    public Room createChessBoard(Long userId, long roomId, ChessBoardConfig chessBoardConfig) {
 
         // 1、判断用户是否有权限来创建棋盘
         PublicUtil.checkUserIdValid(userId, userRepository);
-        Room room = scheduler.getRoom(roomID);
+        Room room = scheduler.getRoom(roomId);
         if (!room.getCreateUserId().equals(userId)) {
             throw new GoServerException(ExceptionEnum.CHESS_USER_PERMISSION_DENY);
         }
+
         // 2、补全棋盘配置，并放到room里面
-        ChessBoardConfig config = initChessBoardConfig(chessBoardConfig, room);
-        // 3、初始化棋盘
-        ChessBoard chessBoard=new ChessBoard();
-        chessBoard.setChessBoardId(chessBoardConfig.getChessBoardId());
-        chessBoard.setStatus(ChessBoardStatus.Going);
-        chessBoard.setNowPlayer(Player.BLACK_PLAYER);
-
-//        // TODO:找到room
-//        Room room=null;
-//        room.setChessBoardConfig(chessBoardConfig);
-//        room.setChessBoard(chessBoard);
-
-        return chessBoard;
-    }
-
-    private ChessBoardConfig initChessBoardConfig(ChessBoardConfig chessBoardConfig, Room room) {
         ChessBoardConfig config = new ChessBoardConfig();
-        config.setChessBoardId(PublicUtil.getUUID());
-        config.setRoomId(room.getRoomId());
-        config.setWhitePlayerId(chessBoardConfig.getWhitePlayerId());
-        config.setBlackPlayerId(chessBoardConfig.getBlackPlayerId());
-        config.setTimeToDrop(chessBoardConfig.getTimeToDrop());
-        config.setBoardSize(chessBoardConfig.getBoardSize());
-        return config;
+        config.init(chessBoardConfig, roomId);
+        room.setChessBoardConfig(config);
+
+        // 3、初始化棋盘
+        ChessBoard chessBoard = new ChessBoard();
+        chessBoard.init(config);
+        room.setChessBoard(chessBoard);
+        // 4、通知白方下棋，黑方等待
+        ChessWebSocketHandler.sendResult(config.getWhitePlayerId(), chessBoard, WebSocketResult.CHESS_START);
+        ChessWebSocketHandler.sendResult(config.getBlackPlayerId(), chessBoard, WebSocketResult.CHESS_WAIT);
+
+        return room;
     }
+
 
 
     public Result enterChessBoard(Long userId, Long roomId) {
 
         // TODO:找到房间
-        Room room=null;
-        ChessBoardConfig chessBoardConfig=room.getChessBoardConfig();
-        if(Objects.equals(chessBoardConfig.getBlackPlayerId(),null)){
+        Room room = null;
+        ChessBoardConfig chessBoardConfig = room.getChessBoardConfig();
+        if (Objects.equals(chessBoardConfig.getBlackPlayerId(), null)) {
             // 黑方没人
             chessBoardConfig.setBlackPlayerId(userId);
-        }
-        else if(Objects.equals(chessBoardConfig.getWhitePlayerId(),null)){
+        } else if (Objects.equals(chessBoardConfig.getWhitePlayerId(), null)) {
             // 黑方没人
             chessBoardConfig.setWhitePlayerId(userId);
         }
@@ -78,13 +72,12 @@ public class ChessBoardServiceImpl implements ChessBoardService {
     }
 
     public Result exitChessBoard(Long userId, Long roomId) {
-        Room room=null;
-        ChessBoardConfig chessBoardConfig=room.getChessBoardConfig();
-        if(Objects.equals(chessBoardConfig.getBlackPlayerId(),userId)){
+        Room room = null;
+        ChessBoardConfig chessBoardConfig = room.getChessBoardConfig();
+        if (Objects.equals(chessBoardConfig.getBlackPlayerId(), userId)) {
             // 黑方没人
             chessBoardConfig.setBlackPlayerId(null);
-        }
-        else if(Objects.equals(chessBoardConfig.getWhitePlayerId(),userId)){
+        } else if (Objects.equals(chessBoardConfig.getWhitePlayerId(), userId)) {
             // 黑方没人
             chessBoardConfig.setWhitePlayerId(null);
         }
@@ -95,24 +88,21 @@ public class ChessBoardServiceImpl implements ChessBoardService {
     public Result changeColor(Long userId, Long roomId, Long color) {
 
         // TODO:找到房间
-        Room room=null;
-        ChessBoardConfig chessBoardConfig=room.getChessBoardConfig();
-        if(Objects.equals(color,Player.WHITE_PLAYER)){
-            if(Objects.equals( chessBoardConfig.getWhitePlayerId(),userId)){
+        Room room = null;
+        ChessBoardConfig chessBoardConfig = room.getChessBoardConfig();
+        if (Objects.equals(color, Player.WHITE_PLAYER)) {
+            if (Objects.equals(chessBoardConfig.getWhitePlayerId(), userId)) {
 
-            }
-            else{
-                Long tempId=chessBoardConfig.getWhitePlayerId();
+            } else {
+                Long tempId = chessBoardConfig.getWhitePlayerId();
                 chessBoardConfig.setWhitePlayerId(userId);
                 chessBoardConfig.setBlackPlayerId(tempId);
             }
-        }
-        else if(Objects.equals(color,Player.BLACK_PLAYER)){
-            if(Objects.equals(chessBoardConfig.getBlackPlayerId(),userId)){
+        } else if (Objects.equals(color, Player.BLACK_PLAYER)) {
+            if (Objects.equals(chessBoardConfig.getBlackPlayerId(), userId)) {
 
-            }
-            else{
-                Long tempId=chessBoardConfig.getBlackPlayerId();
+            } else {
+                Long tempId = chessBoardConfig.getBlackPlayerId();
                 chessBoardConfig.setWhitePlayerId(tempId);
                 chessBoardConfig.setBlackPlayerId(userId);
             }
@@ -139,12 +129,13 @@ public class ChessBoardServiceImpl implements ChessBoardService {
             return Player.BLACK_PLAYER;
         }
     }
+
     public boolean tryTake(int r, int c, ChessBoard board) { // if killed successfully, modify the board directly
         boolean ret = false;
         for (int i = 0; i < 4; i++) {
             int nr = r + dr[i], nc = r + dc[i];
-            if (nr < 0 || nr >= ChessBoard.BOARD_LEN ||
-                    nc < 0 || nc >= ChessBoard.BOARD_LEN) {
+            if (nr < 0 || nr >= board.getBoardSize() ||
+                    nc < 0 || nc >= board.getBoardSize()) {
                 continue;
             }
             if (isNoLiberty(nr, nc, board)) {
@@ -156,10 +147,8 @@ public class ChessBoardServiceImpl implements ChessBoardService {
     }
 
     private void flushFlags(ChessBoard board) {
-        for (int i = 0; i < ChessBoard.BOARD_LEN; i++) {
-            for (int j = 0; j < ChessBoard.BOARD_LEN; j++) {
-                board.getBoardFlag()[i][j] = false;
-            }
+        for (int i = 0; i < board.getBoardSize(); i++) {
+            Arrays.fill(board.getBoardFlag()[i], false);
         }
     }
 
@@ -169,16 +158,17 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         boolean ret = true;
         int type = board.getBoard()[r][c];
         Queue<int[]> q = new LinkedList<>();
-        q.offer(new int[] {r, c});
+        q.offer(new int[]{r, c});
 
-        bfs: while (!q.isEmpty()) {
+        bfs:
+        while (!q.isEmpty()) {
             int[] tmp = q.poll();
             int tmp_r = tmp[0], tmp_c = tmp[1];
             board.getBoardFlag()[tmp_r][tmp_c] = true;
             for (int i = 0; i < 4; i++) {
                 int nr = tmp_r + dr[i], nc = tmp_c + dc[i];
                 if (posIsNotValid(nr, nc, board)) {
-                    continue ;
+                    continue;
                 }
                 if (board.getBoard()[nr][nc] == type) {
                     q.offer(new int[]{nr, nc});
@@ -196,7 +186,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
 
         int type = board.getBoard()[r][c];
         Queue<int[]> q = new LinkedList<>();
-        q.offer(new int[] {r, c});
+        q.offer(new int[]{r, c});
 
         while (!q.isEmpty()) {
             int[] tmp = q.poll();
@@ -206,7 +196,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
             for (int i = 0; i < 4; i++) {
                 int nr = tmp_r + dr[i], nc = tmp_c + dc[i];
                 if (posIsNotValid(nr, nc, board)) {
-                    continue ;
+                    continue;
                 }
                 if (board.getBoard()[nr][nc] == type) {
                     q.offer(new int[]{nr, nc});
@@ -216,8 +206,8 @@ public class ChessBoardServiceImpl implements ChessBoardService {
     }
 
     public boolean posIsNotValid(int r, int c, ChessBoard board) {
-        if (r < 0 || r >= ChessBoard.BOARD_LEN ||
-                c < 0 || c >= ChessBoard.BOARD_LEN) {
+        if (r < 0 || r >= board.getBoardSize() ||
+                c < 0 || c >= board.getBoardSize()) {
             return true;
         }
         return board.getBoardFlag()[r][c];

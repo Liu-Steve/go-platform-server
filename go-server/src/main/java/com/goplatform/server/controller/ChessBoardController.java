@@ -9,6 +9,7 @@ import javax.annotation.Resource;
 /**
  * 棋盘接口
  * 负责：棋盘的配置，下棋的逻辑，悔棋的逻辑，棋盘当前胜负状态逻辑
+ * 黑白两方都应该在创建房间或者进入房间时建立websocket连接
  */
 @RestController
 @RequestMapping("${apiPrefix}/chessBoard")
@@ -17,7 +18,7 @@ public class ChessBoardController {
     private ChessBoardService chessBoardService;
 
     /**
-     * 配置棋盘信息，棋盘大小，等待时间等，并根据配置创建棋盘，此时黑白两方都应该建立websocket连接
+     * 配置棋盘信息，棋盘大小，等待时间等，并根据配置创建棋盘
      * 创建完棋盘后，开始游戏，白方先走并计时
      *
      * @param userId           房主Id
@@ -36,9 +37,9 @@ public class ChessBoardController {
             3、通过websocket通知白方落子，黑方等待，并更新棋盘状态
             4、为白方初始化计时器任务
          */
-        ChessBoard chessBoard = chessBoardService.createChessBoard(userId, roomId, chessBoardConfig);
+        Room room = chessBoardService.createChessBoard(userId, roomId, chessBoardConfig);
         // TODO:返回信息
-        return null;
+        return Result.ok(room);
     }
 
     /**

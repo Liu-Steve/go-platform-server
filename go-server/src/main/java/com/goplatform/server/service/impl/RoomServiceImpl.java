@@ -79,7 +79,7 @@ public class RoomServiceImpl implements RoomService {
         // 更新用户状态
         userRepository.updateStatusByUserId(UserEntity.USER_STATUS_BUSY, userId);
         // 通知房主
-        notifyHostByWS(room, WebSocketResult.ROOM_ENTER);
+        ChessWebSocketHandler.sendResult(room.getCreateUserId(), room, WebSocketResult.ROOM_ENTER);
         return room;
     }
 
@@ -135,19 +135,9 @@ public class RoomServiceImpl implements RoomService {
 
         // 通知房主
         if (resultRoom != null) {
-            notifyHostByWS(resultRoom, WebSocketResult.ROOM_EXIT);
+            ChessWebSocketHandler.sendResult(resultRoom.getCreateUserId(), resultRoom, WebSocketResult.ROOM_EXIT);
         }
         return resultRoom;
-    }
-
-    private void notifyHostByWS(Room room, int mode) {
-        WebSocketResult result = WebSocketResult.ok(mode, room);
-        String roomMsg = JSON.toJSONString(result);
-        try {
-            ChessWebSocketHandler.sendMessage(room.getCreateUserId(), roomMsg);
-        } catch (GoServerException | IOException e) {
-            logger.error("can not notice host: {}, websocket not connect", room.getCreateUserName());
-        }
     }
 
     @Override
