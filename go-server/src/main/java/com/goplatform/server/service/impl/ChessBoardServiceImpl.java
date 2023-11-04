@@ -165,13 +165,16 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         while (!q.isEmpty()) {
             int[] tmp = q.poll();
             int tmp_r = tmp[0], tmp_c = tmp[1];
+            if (posIsNotValid(tmp_r, tmp_c, board)) {
+                continue;
+            }
             board.getBoardFlag()[tmp_r][tmp_c] = true;
             for (int i = 0; i < 4; i++) {
                 int nr = tmp_r + dr[i], nc = tmp_c + dc[i];
                 if (posIsNotValid(nr, nc, board)) {
                     continue;
                 }
-                if (board.getBoard()[nr][nc] == type) {
+                if (board.getBoard()[nr][nc] == type && !posIsNotValid(nr, nc, board)) {
                     q.offer(new int[]{nr, nc});
                 } else if (board.getBoard()[nr][nc] == ChessBoard.EMPTY) {
                     ret = false;
@@ -192,6 +195,9 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         while (!q.isEmpty()) {
             int[] tmp = q.poll();
             int tmp_r = tmp[0], tmp_c = tmp[1];
+            if (posIsNotValid(tmp_r, tmp_c, board)) {
+                continue;
+            }
             board.getBoardFlag()[tmp_r][tmp_c] = true;
             board.getBoard()[tmp_r][tmp_c] = ChessBoard.EMPTY;
             for (int i = 0; i < 4; i++) {

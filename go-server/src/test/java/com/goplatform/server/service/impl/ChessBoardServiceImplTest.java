@@ -20,7 +20,7 @@ class ChessBoardServiceImplTest {
         ChessBoardConfig config = new ChessBoardConfig();
         config.init(new ChessBoardConfig(), 1L);
         chessBoard.init(config);
-        boolean res = chessBoardService.doOneMove(0, 0, 1, chessBoard);
+        boolean res = chessBoardService.doOneMove(0, 0, 0, chessBoard);
         System.out.println(res);
         System.out.println(chessBoard);
     }
