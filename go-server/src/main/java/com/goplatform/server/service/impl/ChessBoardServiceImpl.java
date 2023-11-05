@@ -16,10 +16,7 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Objects;
-import java.util.Queue;
+import java.util.*;
 
 @Service
 public class ChessBoardServiceImpl implements ChessBoardService {
@@ -279,10 +276,10 @@ public class ChessBoardServiceImpl implements ChessBoardService {
 
 
 
-
     //计算目数
     public Result countPoints(ChessBoard chessBoard){
         int[][] board=chessBoard.getBoard();
+        /*
         int countWhite = 0;
         int countBlack= 0;
 
@@ -299,8 +296,17 @@ public class ChessBoardServiceImpl implements ChessBoardService {
 
         // 返回一个数组，其中第一个元素是0的数量，第二个元素是1的数量
         return Result.ok(new int[]{countWhite, countBlack});
+         */
 
+
+        //返回的是一个int[2]，记录{白方分数，黑方分数}
+        //共同区域平分
+        //return Result.ok(GoScoring.score2(board));
+        //共同区域考虑包围关系不平分
+        return Result.ok(GoScoring.score1(board));
     }
+
+
 }
 
 
