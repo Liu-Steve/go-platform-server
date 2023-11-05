@@ -255,4 +255,32 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         }
         return isValidMove;
     }
+
+
+
+
+    //计算目数
+    public Result countPoints(ChessBoard chessBoard){
+        int[][] board=chessBoard.getBoard();
+        int countWhite = 0;
+        int countBlack= 0;
+
+        // 遍历棋盘的每一行和每一列
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[i].length; j++) {
+                if (board[i][j] == ChessBoard.WHITE) {
+                    countWhite++;
+                } else if (board[i][j] == ChessBoard.BLACK) {
+                    countBlack++;
+                }
+            }
+        }
+
+        // 返回一个数组，其中第一个元素是0的数量，第二个元素是1的数量
+        return Result.ok(new int[]{countWhite, countBlack});
+
+    }
 }
+
+
+
