@@ -7,8 +7,8 @@ public class WebSocketResult {
 
     public static final int CHESS_WAIT = 0;
     public static final int CHESS_START = 1;
-    public static final int ROOM_ENTER = 6;
-    public static final int ROOM_EXIT = 7;
+    public static final int ROOM_ENTER = 2;
+    public static final int ROOM_EXIT = 3;
 
     private int mode;
     private Object message;

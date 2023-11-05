@@ -10,4 +10,6 @@ public interface ChessBoardService {
     Room createChessBoard(Long userId, Long roomID, ChessBoardConfig chessBoardConfig);
 
     ChessBoard dropChess(Long userId, Long roomId, ChessDrop chessDrop);
+
+    ChessBoard stopOnce(Long userId, Long roomId);
 }

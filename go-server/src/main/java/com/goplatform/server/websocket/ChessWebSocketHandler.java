@@ -5,6 +5,7 @@ import com.goplatform.server.exception.ExceptionEnum;
 import com.goplatform.server.exception.GoServerException;
 import com.goplatform.server.security.JwtTokenUtil;
 import io.jsonwebtoken.Claims;
+import org.hibernate.result.UpdateCountOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -73,6 +74,18 @@ public class ChessWebSocketHandler extends AbstractWebSocketHandler {
             ChessWebSocketHandler.sendMessage(userId, roomMsg);
         } catch (GoServerException | IOException e) {
             logger.error("can not notice user: {}, websocket not connect", userId);
+        }
+    }
+
+    /**
+     * 校验socket连接是否建立，在需要用户交互操作时调用，后续应该使用AOP切片处理
+     */
+    public static void checkWebSocketConnection(Long userId) {
+        if (!sessionMap.containsKey(userId) || sessionMap.get(userId) == null) {
+            throw new GoServerException(ExceptionEnum.CHESS_SOCKET_CONNECTION_NOT_EXIST);
+        }
+        if (!sessionMap.get(userId).isOpen()) {
+            throw new GoServerException(ExceptionEnum.CHESS_SOCKET_CONNECTION_NOT_EXIST);
         }
     }
 
