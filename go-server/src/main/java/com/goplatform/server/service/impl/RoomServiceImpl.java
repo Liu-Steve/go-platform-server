@@ -68,6 +68,7 @@ public class RoomServiceImpl implements RoomService {
      * @return 返回房间信息
      */
     public Room enterRoom(Long userId, Long roomId) {
+        ChessWebSocketHandler.checkWebSocketConnection(userId);
         // 校验并获得用户信息
         UserEntity userEntity = checkAndGetUser(userId, UserEntity.USER_STATUS_FREE);
         // 获得对应的房间
@@ -94,6 +95,7 @@ public class RoomServiceImpl implements RoomService {
      * @return 退出结果
      */
     public Room exitRoom(Long userId, Long roomId) {
+        ChessWebSocketHandler.checkWebSocketConnection(userId);
         // TODO:鉴权：用户是否存在并且在房间中
         UserEntity userEntity = checkAndGetUser(userId, UserEntity.USER_STATUS_BUSY);
         Room room = scheduler.getRoom(roomId);
