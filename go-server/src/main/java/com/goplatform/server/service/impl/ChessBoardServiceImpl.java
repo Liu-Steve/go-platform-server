@@ -224,7 +224,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
     public boolean tryTake(int r, int c, ChessBoard board) { // if killed successfully, modify the board directly
         boolean ret = false;
         for (int i = 0; i < 4; i++) {
-            int nr = r + dr[i], nc = r + dc[i];
+            int nr = r + dr[i], nc = c + dc[i];
             if (nr < 0 || nr >= board.getBoardSize() ||
                     nc < 0 || nc >= board.getBoardSize()) {
                 continue;
