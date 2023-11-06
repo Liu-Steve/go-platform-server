@@ -116,8 +116,6 @@ public class RoomServiceImpl implements RoomService {
             room.setSecondUserId(null);
             room.setChessBoardConfig(null);
             room.setChessBoard(null);
-            // 更新用户状态
-            userRepository.updateStatusByUserId(UserEntity.USER_STATUS_FREE, userId);
             resultRoom =  room;
         }
 
@@ -134,7 +132,8 @@ public class RoomServiceImpl implements RoomService {
             room.setChessBoard(null);
             resultRoom = room;
         }
-
+        // 更新用户状态
+        userRepository.updateStatusByUserId(UserEntity.USER_STATUS_FREE, userId);
         // 通知房主
         if (resultRoom != null) {
             ChessWebSocketHandler.sendResult(resultRoom.getCreateUserId(), resultRoom, WebSocketResult.ROOM_EXIT);
