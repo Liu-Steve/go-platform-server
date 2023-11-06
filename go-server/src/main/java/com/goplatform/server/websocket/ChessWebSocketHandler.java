@@ -3,7 +3,10 @@ package com.goplatform.server.websocket;
 import com.alibaba.fastjson.JSON;
 import com.goplatform.server.exception.ExceptionEnum;
 import com.goplatform.server.exception.GoServerException;
+import com.goplatform.server.manager.Scheduler;
+import com.goplatform.server.pojo.domain.Room;
 import com.goplatform.server.security.JwtTokenUtil;
+import com.goplatform.server.service.RoomService;
 import io.jsonwebtoken.Claims;
 import org.hibernate.result.UpdateCountOutput;
 import org.slf4j.Logger;
@@ -15,6 +18,7 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -27,6 +31,10 @@ public class ChessWebSocketHandler extends AbstractWebSocketHandler {
 
     private static final Map<Long, WebSocketSession> sessionMap = new ConcurrentHashMap<>();
 
+    @Resource
+    private Scheduler scheduler;
+    @Resource
+    private RoomService roomService;
     private long getUserIdFromSession(WebSocketSession session) throws Exception {
         String header = session.getHandshakeHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         String token = JwtTokenUtil.getTokenFromHeader(header);
@@ -57,6 +65,8 @@ public class ChessWebSocketHandler extends AbstractWebSocketHandler {
         long userId = getUserIdFromSession(session);
         logger.debug("User Offline: " + userId);
         sessionMap.remove(userId);
+        logger.info("free user if inside room");
+        freeUserFromRoom(userId);
     }
 
     @Override
@@ -64,6 +74,8 @@ public class ChessWebSocketHandler extends AbstractWebSocketHandler {
         long userId = getUserIdFromSession(session);
         logger.warn("Connection error: " + userId);
         logger.warn(Arrays.toString(exception.getStackTrace()));
+        logger.info("free user if inside room");
+        freeUserFromRoom(userId);
         sessionMap.remove(userId);
     }
 
@@ -103,5 +115,13 @@ public class ChessWebSocketHandler extends AbstractWebSocketHandler {
         }
         WebSocketSession session = sessionMap.get(userId);
         session.sendMessage(new TextMessage(message));
+    }
+
+    public void freeUserFromRoom(Long userId) {
+        // 处理用户-房间映射
+        Room room = scheduler.removeUserRoom(userId);
+        if (room == null || room.getRoomId() == null) return;
+        // 处理房间
+        roomService.exitRoom(userId, room.getRoomId());
     }
 }
