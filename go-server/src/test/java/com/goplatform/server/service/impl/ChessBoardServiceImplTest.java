@@ -37,6 +37,41 @@ class ChessBoardServiceImplTest {
         res = chessBoardService.doOneMove(1, 0, 1, chessBoard);
         System.out.println(res);
         System.out.println(chessBoard);
+    }
 
+    @Test
+    void testTakeTwo() {
+        ChessBoard chessBoard = new ChessBoard();
+        ChessBoardConfig config = new ChessBoardConfig();
+        config.init(new ChessBoardConfig(), 1L);
+        chessBoard.init(config);
+        boolean res = chessBoardService.doOneMove(0, 0, 0, chessBoard);
+        res = chessBoardService.doOneMove(0, 2, 1, chessBoard);
+        res = chessBoardService.doOneMove(0, 1, 0, chessBoard);
+        res = chessBoardService.doOneMove(1, 0, 1, chessBoard);
+        res = chessBoardService.doOneMove(3, 3, 0, chessBoard);
+        res = chessBoardService.doOneMove(1, 1, 1, chessBoard);
+
+        System.out.println(res);
+        System.out.println(chessBoard);
+    }
+
+    @Test
+    void testSimpleKo() {
+        ChessBoard chessBoard = new ChessBoard();
+        ChessBoardConfig config = new ChessBoardConfig();
+        config.init(new ChessBoardConfig(), 1L);
+        chessBoard.init(config);
+        boolean res = chessBoardService.doOneMove(0, 0, 0, chessBoard);
+        res = chessBoardService.doOneMove(0, 1, 1, chessBoard);
+        res = chessBoardService.doOneMove(1, 1, 0, chessBoard);
+        res = chessBoardService.doOneMove(1, 0, 1, chessBoard);
+        res = chessBoardService.doOneMove(2, 0, 0, chessBoard);
+        res = chessBoardService.doOneMove(2, 1, 1, chessBoard);
+        res = chessBoardService.doOneMove(0, 0, 0, chessBoard);
+        res = chessBoardService.doOneMove(1, 0, 1, chessBoard);
+
+        System.out.println(res);
+        System.out.println(chessBoard);
     }
 }

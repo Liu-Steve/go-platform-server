@@ -157,18 +157,47 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         }
     }
 
+    public boolean testKo(int r, int c, ChessBoard board) {
+        // test if taking only one stone
+        for (int i = 0; i < 4; i++) {
+            int nr = r + dr[i], nc = c + dc[i];
+            if (nr < 0 || nr >= board.getBoardSize() ||
+                nc < 0 || nc >= board.getBoardSize() ||
+                board.getBoard()[r][c] != board.getBoard()[nr][nc]) {
+                continue;
+            } else {
+                return false;
+            }
+        }
+
+        // compare with ko record
+        if (!board.isOnKo()) {
+            return false;
+        }
+
+        return board.getKoPos()[0] == r && board.getKoPos()[1] == c;
+    }
+
     public boolean tryTake(int r, int c, ChessBoard board) { // if killed successfully, modify the board directly
         boolean ret = false;
+        int numOfTaken = 0;
         for (int i = 0; i < 4; i++) {
             int nr = r + dr[i], nc = c + dc[i];
             if (nr < 0 || nr >= board.getBoardSize() ||
                     nc < 0 || nc >= board.getBoardSize()) {
                 continue;
             }
-            if (isNoLiberty(nr, nc, board)) {
-                take(nr, nc, board);
+            if (isNoLiberty(nr, nc, board) && !testKo(nr, nc, board)) {
+                numOfTaken += take(nr, nc, board);
                 ret = true;
             }
+        }
+
+        board.flushKo();
+        if (numOfTaken == 1) {
+            // activate Ko
+            board.setOnKo(true);
+            board.setKoPos(new int[] {r, c});
         }
         return ret;
     }
@@ -205,10 +234,11 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         return ret;
     }
 
-    public void take(int r, int c, ChessBoard board) {
+    public int take(int r, int c, ChessBoard board) {
         board.flushFlag();
 
         int type = board.getBoard()[r][c];
+        int ret = 0;
         Queue<int[]> q = new LinkedList<>();
         q.offer(new int[]{r, c});
 
@@ -220,6 +250,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
             }
             board.getBoardFlag()[tmp_r][tmp_c] = true;
             board.getBoard()[tmp_r][tmp_c] = ChessBoard.EMPTY;
+            ret++;
             for (int i = 0; i < 4; i++) {
                 int nr = tmp_r + dr[i], nc = tmp_c + dc[i];
                 if (posIsNotValid(nr, nc, board)) {
@@ -230,6 +261,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
                 }
             }
         }
+        return ret;
     }
 
     public boolean posIsNotValid(int r, int c, ChessBoard board) {

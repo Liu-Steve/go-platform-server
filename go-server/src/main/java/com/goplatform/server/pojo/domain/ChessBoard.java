@@ -26,6 +26,10 @@ public class ChessBoard {
     private ConcurrentLinkedQueue<OneMove> record;
     // 当前应该谁下棋 0：白色 1：黑色 （后续枚举类）
     private Player nowPlayer;
+    // 打劫状态
+    private boolean isOnKo;
+    // 打劫坐标
+    private int[] koPos;
 
     public void init(ChessBoardConfig config) {
         boardSize = config.getBoardSize();
@@ -43,5 +47,10 @@ public class ChessBoard {
         for (int i = 0; i < boardSize; i ++ ) {
             Arrays.fill(boardFlag[i], false);
         }
+    }
+
+    public void flushKo() {
+        isOnKo = false;
+        koPos = new int[] {-1, -1};
     }
 }
