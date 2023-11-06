@@ -12,4 +12,10 @@ public interface ChessBoardService {
     ChessBoard dropChess(Long userId, Long roomId, ChessDrop chessDrop);
 
     ChessBoard stopOnce(Long userId, Long roomId);
+
+    ChessBoard overGameRequest(Long userId, Long roomId);
+
+    ChessBoard overGameConfirm(Long userId, Long roomId);
+
+    Object getChessBoardResult(Long userId, Long roomId);
 }
