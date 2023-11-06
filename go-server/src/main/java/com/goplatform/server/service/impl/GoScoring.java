@@ -9,20 +9,20 @@ import java.util.Stack;
 import java.util.*;
 
 
+public class GoScoring {
 
-public  class GoScoring {
-
-    public  static  int[] score1(int[][] board){
+    public static int[] score1(int[][] board) {
         //共同区域不平分
         return GoScoring1.scoreBoard(board);
     }
 
-    public static int[] score2(int[][] board){
+    public static int[] score2(int[][] board) {
         //共同区域平分
         return GoScoring2.scoreBoard(board);
     }
 }
- class GoScoring1 {
+
+class GoScoring1 {
     /*
         点目的子函数
      */
