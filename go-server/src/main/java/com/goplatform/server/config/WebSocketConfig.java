@@ -25,7 +25,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(chessWebSocketHandler, "/ws");
-        registry.addHandler(chessWebSocketHandler, "/ws").withSockJS();
+        registry.addHandler(chessWebSocketHandler, "/ws").setAllowedOrigins("*");
+        registry.addHandler(chessWebSocketHandler, "/ws").setAllowedOrigins("*").withSockJS();
     }
 }
