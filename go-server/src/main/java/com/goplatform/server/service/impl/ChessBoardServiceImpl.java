@@ -1,5 +1,6 @@
 package com.goplatform.server.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.goplatform.server.exception.ExceptionEnum;
 import com.goplatform.server.exception.GoServerException;
 import com.goplatform.server.manager.Scheduler;
@@ -16,10 +17,7 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Objects;
-import java.util.Queue;
+import java.util.*;
 
 @Service
 public class ChessBoardServiceImpl implements ChessBoardService {
@@ -54,7 +52,6 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         // 4、通知白方下棋，黑方等待
         ChessWebSocketHandler.sendResult(config.getWhitePlayerId(), chessBoard, WebSocketResult.CHESS_START);
         ChessWebSocketHandler.sendResult(config.getBlackPlayerId(), chessBoard, WebSocketResult.CHESS_WAIT);
-
         return room;
     }
 
@@ -100,8 +97,75 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         ChessWebSocketHandler.checkWebSocketConnection(userId);
         Room room = scheduler.getRoom(roomId);
         int type = checkDropPermission(userId, room);
-        switchPlayer(type, room);
+        // 如果对方已经挺了一首，则判断两人是否要结束棋局
+        if (room.getChessBoard().getStatus().equals(ChessBoardStatus.StopOnce)) {
+            if (type == ChessBoard.BLACK) {
+                room.getChessBoard().setNowPlayer(Player.WHITE_PLAYER);
+            } else if (type == ChessBoard.WHITE) {
+                room.getChessBoard().setNowPlayer(Player.BLACK_PLAYER);
+            }
+            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getBlackPlayerId(), room.getChessBoard(), WebSocketResult.CHESS_REQUEST_STOP);
+            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), room.getChessBoard(), WebSocketResult.CHESS_REQUEST_STOP);
+        }
+        // 通知对手自己停一手，并也要告知自己，自己停了一手
+        if (type == ChessBoard.BLACK) {
+            room.getChessBoard().setNowPlayer(Player.WHITE_PLAYER);
+            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getBlackPlayerId(), room.getChessBoard(), WebSocketResult.CHESS_STOP_ONCE);
+            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), room.getChessBoard(), WebSocketResult.CHESS_STOP_ONCE_ANOTHER);
+        } else if (type == ChessBoard.WHITE) {
+            room.getChessBoard().setNowPlayer(Player.BLACK_PLAYER);
+            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getBlackPlayerId(), room.getChessBoard(), WebSocketResult.CHESS_STOP_ONCE_ANOTHER);
+            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), room.getChessBoard(), WebSocketResult.CHESS_STOP_ONCE);
+        }
+        // 并且设置房间状态为停一手
+        room.getChessBoard().setStatus(ChessBoardStatus.StopOnce);
         return null;
+    }
+
+    @Override
+    public ChessBoard overGameRequest(Long userId, Long roomId) {
+        ChessWebSocketHandler.checkWebSocketConnection(userId);
+        Room room = scheduler.getRoom(roomId);
+        int type = checkDropPermission(userId, room);
+        // 请求认输，使用websocket通知对面，更新棋盘状态，但不更新棋盘当前用户
+        room.getChessBoard().setStatus(ChessBoardStatus.OverRequest);
+        return null;
+    }
+
+    /** 确认结束对局功能
+     *
+     * @param userId 确认用户
+     * @param roomId 房间号
+     * @return
+     */
+    @Override
+    public ChessBoard overGameConfirm(Long userId, Long roomId) {
+        ChessWebSocketHandler.checkWebSocketConnection(userId);
+        Room room = scheduler.getRoom(roomId);
+        int type = checkDropPermission(userId, room);
+        // 请求认输，使用websocket通知对面，更新棋盘状态，但不更新棋盘当前用户
+        room.getChessBoard().setStatus(ChessBoardStatus.OverRequest);
+
+        return null;
+    }
+
+    /**
+     * 获取当前棋盘的得分
+     *
+     * @param userId 用户Id
+     * @param roomId 房间号
+     * @return 结果
+     */
+    @Override
+    public Object getChessBoardResult(Long userId, Long roomId) {
+        ChessWebSocketHandler.checkWebSocketConnection(userId);
+        Room room = scheduler.getRoom(roomId);
+        checkDropPermission(userId, room);
+        int[] res = GoScoring.score1(room.getChessBoard().getBoard());
+        JSONObject object = new JSONObject();
+        object.put("white", res[0]);
+        object.put("black", res[1]);
+        return object;
     }
 
     private void switchPlayer(int type, Room room) {
@@ -308,4 +372,41 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         board.setBoardFlag(null);
         return isValidMove;
     }
+
+
+
+    //计算目数
+    public Result countPoints(ChessBoard chessBoard){
+        int[][] board=chessBoard.getBoard();
+        /*
+        int countWhite = 0;
+        int countBlack= 0;
+
+        // 遍历棋盘的每一行和每一列
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[i].length; j++) {
+                if (board[i][j] == ChessBoard.WHITE) {
+                    countWhite++;
+                } else if (board[i][j] == ChessBoard.BLACK) {
+                    countBlack++;
+                }
+            }
+        }
+
+        // 返回一个数组，其中第一个元素是0的数量，第二个元素是1的数量
+        return Result.ok(new int[]{countWhite, countBlack});
+         */
+
+
+        //返回的是一个int[2]，记录{白方分数，黑方分数}
+        //共同区域平分
+        //return Result.ok(GoScoring.score2(board));
+        //共同区域考虑包围关系不平分
+        return Result.ok(GoScoring.score1(board));
+    }
+
+
 }
+
+
+

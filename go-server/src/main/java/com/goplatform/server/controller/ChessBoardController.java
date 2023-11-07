@@ -78,7 +78,7 @@ public class ChessBoardController {
     }
 
     /**
-     * 请求结束对局
+     * 请求结束对局(认输)
      *
      * @param userId 请求用户Id
      * @param roomId 房间Id
@@ -91,14 +91,8 @@ public class ChessBoardController {
         return null;
     }
 
-    @GetMapping("/stop_once/{userId}/{roomId}")
-    public Result stopOnce(@PathVariable("userId") Long userId, @PathVariable("roomId") Long roomId) {
-        ChessBoard chessBoard = chessBoardService.stopOnce(userId, roomId);
-        return Result.ok(chessBoard);
-    }
-
     /**
-     * 确认结束对局
+     * 确认结束对局(在双方都停一手或者一方认输的时候调用
      *
      * @param userId 请求用户Id
      * @param roomId 房间Id
@@ -110,4 +104,17 @@ public class ChessBoardController {
         // TODO 确认结束对局，并计算对局结果，返回给前端
         return null;
     }
+
+    @GetMapping("result/{userId}/{roomId}")
+    public Result getChessBoardResult(@PathVariable("userId") Long userId, @PathVariable("roomId") Long roomId) {
+        return Result.ok(chessBoardService.getChessBoardResult(userId, roomId));
+    }
+
+    @GetMapping("/stop_once/{userId}/{roomId}")
+    public Result stopOnce(@PathVariable("userId") Long userId, @PathVariable("roomId") Long roomId) {
+        ChessBoard chessBoard = chessBoardService.stopOnce(userId, roomId);
+        return Result.ok(chessBoard);
+    }
+
+
 }

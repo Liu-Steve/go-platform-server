@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Scheduler {
     // 用于存储创建的房间，键为房间Id，值为具体房间
     private final ConcurrentHashMap<Long, Room> roomMaps = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, Room> userRoomMaps = new ConcurrentHashMap<>();
 
     public Room addRoom(Room room) {
         Long roomId = room.getRoomId();
@@ -40,5 +41,23 @@ public class Scheduler {
 
     public Collection<Room> listRoom() {
         return roomMaps.values();
+    }
+
+    public Room getUserRoom(Long userId) {
+        if (userRoomMaps.containsKey(userId)) {
+            return userRoomMaps.get(userId);
+        }
+        return null;
+    }
+
+    public Room addUserRoom(Long userId, Room room) {
+        return userRoomMaps.put(userId, room);
+    }
+
+    public Room removeUserRoom(Long userId) {
+        if (userId == null || !userRoomMaps.containsKey(userId) || userRoomMaps.get(userId) == null) {
+            return null;
+        }
+        return userRoomMaps.remove(userId);
     }
 }

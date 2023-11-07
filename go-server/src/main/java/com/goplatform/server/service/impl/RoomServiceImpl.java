@@ -56,6 +56,7 @@ public class RoomServiceImpl implements RoomService {
         roomNew.setCreatedate(new Date());
         scheduler.addRoom(roomNew);
         // 更新用户状态
+        scheduler.addUserRoom(userId, roomNew);
         userRepository.updateStatusByUserId(UserEntity.USER_STATUS_BUSY, userId);
         return roomNew;
     }
@@ -78,6 +79,7 @@ public class RoomServiceImpl implements RoomService {
         room.setSecondUserId(userId);
         room.setPersonCount(2);
         // 更新用户状态
+        scheduler.addUserRoom(userId, room);
         userRepository.updateStatusByUserId(UserEntity.USER_STATUS_BUSY, userId);
         // 通知房主
         ChessWebSocketHandler.sendResult(room.getCreateUserId(), room, WebSocketResult.ROOM_ENTER);
@@ -116,8 +118,6 @@ public class RoomServiceImpl implements RoomService {
             room.setSecondUserId(null);
             room.setChessBoardConfig(null);
             room.setChessBoard(null);
-            // 更新用户状态
-            userRepository.updateStatusByUserId(UserEntity.USER_STATUS_FREE, userId);
             resultRoom =  room;
         }
 
@@ -134,6 +134,9 @@ public class RoomServiceImpl implements RoomService {
             room.setChessBoard(null);
             resultRoom = room;
         }
+        // 更新用户状态
+        scheduler.removeUserRoom(userId);
+        userRepository.updateStatusByUserId(UserEntity.USER_STATUS_FREE, userId);
 
         // 通知房主
         if (resultRoom != null) {
