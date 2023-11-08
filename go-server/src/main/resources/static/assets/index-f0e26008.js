@@ -1,0 +1,1 @@
+import{p as e,ap as o,b6 as u}from"./index-49f4e068.js";const i=["class","style"],E=/^on[A-Z]/,p=(a={})=>{const{excludeListeners:c=!1,excludeKeys:t}=a,l=e(()=>((t==null?void 0:t.value)||[]).concat(i)),s=o();return s?e(()=>{var n;return u(Object.entries((n=s.proxy)==null?void 0:n.$attrs).filter(([r])=>!l.value.includes(r)&&!(c&&E.test(r))))}):e(()=>({}))};export{p as u};
