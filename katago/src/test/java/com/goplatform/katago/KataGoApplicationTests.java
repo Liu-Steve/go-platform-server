@@ -1,10 +1,10 @@
-package com.goplatform.katago.katago;
+package com.goplatform.katago;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class KatagoApplicationTests {
+class KataGoApplicationTests {
 
     @Test
     void contextLoads() {
