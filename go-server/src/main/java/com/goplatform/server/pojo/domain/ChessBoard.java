@@ -39,7 +39,7 @@ public class ChessBoard {
             Arrays.fill(board[i], ChessBoard.EMPTY);
         }
         record = new ConcurrentLinkedQueue<>();
-        nowPlayer = Player.WHITE_PLAYER;
+        nowPlayer = Player.BLACK_PLAYER;
         status = ChessBoardStatus.Going;
     }
     public void flushFlag() {
