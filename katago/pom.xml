@@ -63,14 +63,11 @@
                         <goals>
                             <goal>build</goal>
                         </goals>
-                        <configuration>
-                            <tag>latest</tag>
-                        </configuration>
                     </execution>
                 </executions>
                 <configuration>
                     <repository>liusteve/go-platform-katago</repository>
-                    <tag>${project.version}</tag>
+                    <tag>latest</tag>
                     <dockerfile>${project.basedir}/src/main/docker/Dockerfile</dockerfile>
                     <buildArgs>
                         <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
