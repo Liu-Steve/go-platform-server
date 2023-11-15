@@ -49,9 +49,9 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         ChessBoard chessBoard = new ChessBoard();
         chessBoard.init(config);
         room.setChessBoard(chessBoard);
-        // 4、通知白方下棋，黑方等待
-        ChessWebSocketHandler.sendResult(config.getWhitePlayerId(), chessBoard, WebSocketResult.CHESS_START);
-        ChessWebSocketHandler.sendResult(config.getBlackPlayerId(), chessBoard, WebSocketResult.CHESS_WAIT);
+        // 4、通知黑方下棋，白方等待
+        ChessWebSocketHandler.sendResult(config.getBlackPlayerId(), chessBoard, WebSocketResult.CHESS_START);
+        ChessWebSocketHandler.sendResult(config.getWhitePlayerId(), chessBoard, WebSocketResult.CHESS_WAIT);
         return room;
     }
 
@@ -119,6 +119,8 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         }
         // 并且设置房间状态为停一手
         room.getChessBoard().setStatus(ChessBoardStatus.StopOnce);
+        // 并清除掉打劫信息
+        room.getChessBoard().flushKo();
         return null;
     }
 
