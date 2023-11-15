@@ -54,8 +54,8 @@
             </plugin>
             <plugin>
                 <groupId>com.spotify</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <version>0.4.13</version>
+                <artifactId>dockerfile-maven-plugin</artifactId>
+                <version>1.4.13</version>
                 <executions>
                     <execution>
                         <id>build-image</id>
@@ -63,22 +63,19 @@
                         <goals>
                             <goal>build</goal>
                         </goals>
+                        <configuration>
+                            <tag>latest</tag>
+                        </configuration>
                     </execution>
                 </executions>
                 <configuration>
-                    <imageName>liusteve/go-platform-katago</imageName>
-                    <imageTags>
-                        <imageTag>${project.version}</imageTag>
-                    </imageTags>
-                    <forceTags>true</forceTags>
-                    <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
-                    <resources>
-                        <resource>
-                            <targetPath>/</targetPath>
-                            <directory>${project.build.directory}</directory>
-                            <include>${project.build.finalName}.jar</include>
-                        </resource>
-                    </resources>
+                    <repository>liusteve/go-platform-katago</repository>
+                    <tag>${project.version}</tag>
+                    <dockerfile>${project.basedir}/src/main/docker/Dockerfile</dockerfile>
+                    <buildArgs>
+                        <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
+                        <JAR_VERSION>${project.version}</JAR_VERSION>
+                    </buildArgs>
                 </configuration>
                 <dependencies>
                     <dependency>

@@ -31,6 +31,7 @@ public class KataAgent {
 
         try {
             Process process = builder.start();
+            //process = builder.start();
 
             // 处理进程的输出
             // thread is temp
@@ -71,6 +72,7 @@ public class KataAgent {
 
             // 等待进程结束
             process.waitFor();
+
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -84,22 +86,21 @@ public class KataAgent {
             result = "init no";
         }
 
-
         return result;
     }
 
 
     //clear
-    public String kataClear() {
+    public String kataClear(Process process) {
 
-        StringBuilder res = new StringBuilder();
+        //StringBuilder res = new StringBuilder();
 
 
         try {
-            Process process = builder.start();
+            //Process process = builder.start();
             // 处理进程的输出
             // thread is temp
-
+            /*
             Thread outputThread1 = new Thread(() -> {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                     String line;
@@ -112,52 +113,59 @@ public class KataAgent {
                 }
             });
             outputThread1.start();
+            */
+
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+            writer.write("clear_board\n");
+            writer.flush();
+            //writer can't close here
 
 
             // 向进程发送命令
+            /*/
             try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()))) {
                 writer.write("clear_board\n");
                 writer.flush();
-
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            */
 
             // 等待输出线程结束
-            outputThread1.join();
+            //outputThread1.join();
 
             // 等待进程结束
-            process.waitFor();
-        } catch (IOException | InterruptedException e) {
+            //process.waitFor();
+            //} catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
-        String finalRes = res.toString();
-        String result;
+        //String finalRes = res.toString();
+        //String result;
+        //
+        //if(finalRes.equals("= ")){
+        //   result="clear yes";
+        //}else{
+        //    result="clear no";
+        //}
 
-        if (finalRes.equals("= ")) {
-            result = "clear yes";
-        } else {
-            result = "clear no";
-        }
 
-
-        return result;
+        return null;
     }
 
 
     //setboard
-    public String kataSetBoard(int boardsize, int[][] board, Player player) {
+    public String kataSetBoard(int boardsize, int[][] board, Player player, Process process) {
 
-        StringBuilder res = new StringBuilder();
+        //StringBuilder res = new StringBuilder();
 
 
         try {
-            Process process = builder.start();
+            //Process process = builder.start();
             // 处理进程的输出
             // thread is temp
-
+            /*
             Thread outputThread1 = new Thread(() -> {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                     String line;
@@ -170,70 +178,69 @@ public class KataAgent {
                 }
             });
             outputThread1.start();
+            */
 
 
             // 向进程发送命令
-            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()))) {
-                writer.write("boardsize " + Integer.toString(boardsize) + "\n");
-                writer.flush();
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+            writer.write("boardsize " + Integer.toString(boardsize) + "\n");
+            writer.flush();
+            //writer can't close here
 
-                //drop history play
-                for (int row = 0; row < boardsize; row++) {
-                    for (int col = 0; col < boardsize; col++) {
-                        switch (board[row][col]) {
-                            case -1:
-                                break;
-                            case 0:
-                                writer.write("play white " + Character.toString((char) ('A' + row)) + Integer.toString(col) + "\n");
-                                writer.flush();
-                                break;
-                            case 1:
-                                writer.write("play black " + Character.toString((char) ('A' + row)) + Integer.toString(col) + "\n");
-                                writer.flush();
-                                break;
-                            default:
-                                break;
-                        }
+            //drop history play
+            for (int row = 0; row < boardsize; row++) {
+                for (int col = 0; col < boardsize; col++) {
+                    switch (board[row][col]) {
+                        case -1:
+                            break;
+                        case 0:
+                            writer.write("play white " + Character.toString((char) ('A' + row)) + Integer.toString(col) + "\n");
+                            writer.flush();
+                            break;
+                        case 1:
+                            writer.write("play black " + Character.toString((char) ('A' + row)) + Integer.toString(col) + "\n");
+                            writer.flush();
+                            break;
+                        default:
+                            break;
                     }
                 }
-                if (Player.BLACK_PLAYER == player) {
-                    writer.write("play white pass\n");
-                    writer.flush();
-                } else {
-                    writer.write("play black pass\n");
-                    writer.flush();
-                }
-
-
-            } catch (IOException e) {
-                e.printStackTrace();
+            }
+            if (Player.BLACK_PLAYER == player) {
+                writer.write("play white pass\n");
+                writer.flush();
+            } else {
+                writer.write("play black pass\n");
+                writer.flush();
             }
 
+
             // 等待输出线程结束
-            outputThread1.join();
+            //outputThread1.join();
 
             // 等待进程结束
-            process.waitFor();
-        } catch (IOException | InterruptedException e) {
+            //process.waitFor();
+            //} catch (IOException | InterruptedException e) {\
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
-        String finalRes = res.toString();
-        String result;
+        //String finalRes = res.toString();
+        //String result;
 
-        if (!finalRes.equals("")) {
-            result = "set yes";
-        } else {
-            result = "set no";
-        }
+        //if(!finalRes.equals("")){
+        //    result="set yes";
+        //}else{
+        //   result="set no";
+        //}
 
 
-        return result;
+        return null;
     }
 
 
     //drop-predict
-    public String kataDropPoint(int maxmoves, int visits) {
+    public String kataDropPoint(int boardsize, int[][] board, Player player, int maxmoves, int visits) {
         ArrayList<String> res = new ArrayList<>();
         String nextMove = null;
 
@@ -250,9 +257,9 @@ public class KataAgent {
                     while ((line = reader.readLine()) != null) {
                         //one line for maxmoves moves in the order
                         //tongbu fangcun
-                        synchronized (res) {
-                            res.add(line);
-                        }
+                        //synchronized (res) {
+                        res.add(line);
+                        //}
                     }
 
 
@@ -267,6 +274,10 @@ public class KataAgent {
             try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()))) {
                 //writer.write("kata-analyze "+" interval "+Integer.toString(200)+ " maxmoves "+Integer.toString(maxmoves)+" ownership true"+"\n");
 
+                //
+                kataClear(process);
+                kataSetBoard(boardsize, board, player, process);
+
 
                 //predict
                 boolean notFound = true;
@@ -274,6 +285,9 @@ public class KataAgent {
                 //re for the number
                 while (notFound) {
                     //System.out.println("finding\n");
+
+
+                    //predict
                     writer.write("kata-analyze interval 200 maxmoves " + Integer.toString(maxmoves) + "\n");
                     writer.flush();
                     //jian ge tai xiao, res hui bei zang du ying xiang xiu gai
@@ -340,7 +354,7 @@ public class KataAgent {
 
 
     //count-point
-    public int[] kataCountPoint(Player player) {
+    public int[] kataCountPoint(int boardsize, int[][] board, Player player) {
         ArrayList<String> res = new ArrayList<>();
         int pointScore = 0;
         int antiPointScore = 0;
@@ -376,6 +390,9 @@ public class KataAgent {
                 //writer.write("kata-analyze "+" interval "+Integer.toString(200)+ " maxmoves "+Integer.toString(maxmoves)+" ownership true"+"\n");
 
 
+                kataClear(process);
+                kataSetBoard(boardsize, board, player, process);
+
                 //predict
                 boolean notFound = true;
                 //System.out.println("find drop");
@@ -383,6 +400,7 @@ public class KataAgent {
                 while (notFound) {
                     //System.out.println("finding\n");
                     writer.write("kata-analyze interval 200 maxmoves " + Integer.toString(countPointWidth) + " ownership true" + "\n");
+                    //writer.write("kata-analyze interval 200 maxmoves "+Integer.toString(countPointWidth)+"\n");
                     writer.flush();
                     //jian ge tai xiao, res hui bei zang du ying xiang xiu gai
                     Thread.sleep(15 * 200);
@@ -410,6 +428,8 @@ public class KataAgent {
                         //System.out.println("visits:"+Integer.toString(maxVists));
                         if (maxVists > countPointDepth) {
                             //the first order is max winrate
+                            //String[] lastNumberInfo=tempRes.get(lastInfosIndex).split("info");
+                            //int ownerIndex=lastInfo[lastNumberInfo].indexOf("ownership ");
                             int ownerIndex = tempRes.get(lastInfosIndex).indexOf("ownership ");
                             //int ownerEndIndex=tempRes.get(lastInfosIndex).indexOf(" ",ownerIndex+"owner ".length());
                             String[] numberArray = tempRes.get(lastInfosIndex).substring(ownerIndex + "ownership ".length()).split(" ");
@@ -436,7 +456,7 @@ public class KataAgent {
             outputThread1.join();
 
             // 等待进程结束
-            process.waitFor();
+            //process.waitFor();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

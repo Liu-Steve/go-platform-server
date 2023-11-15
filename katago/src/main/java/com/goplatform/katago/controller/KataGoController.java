@@ -1,27 +1,30 @@
-package com.goplatform.katago;
+package com.goplatform.katago.controller;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import com.goplatform.katago.pojo.Result;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.*;
 
 import static com.goplatform.katago.pojo.Constants.*;
+import static com.goplatform.katago.pojo.Constants.CONFIG_URL;
 
-@SpringBootTest
-class KataGoApplicationTests {
+@RestController
+@RequestMapping("/kata")
+public class KataGoController {
 
-
-    @Test
-    void contextLoads() {
+    @GetMapping("/test")
+    public Result test() {
 
         System.out.println("kata url: " + KATA_URL);
         System.out.println("neural url: " + NEURAL_URL);
         System.out.println("config url: " + CONFIG_URL);
 
-//        ProcessBuilder builder = new ProcessBuilder(
-//                KATA_URL, "gtp", "-model", NEURAL_URL, "-config", CONFIG_URL
-//        );
-        ProcessBuilder builder = new ProcessBuilder("pwd");
+        ProcessBuilder builder = new ProcessBuilder(
+                KATA_URL, "gtp", "-model", NEURAL_URL, "-config", CONFIG_URL
+        );
+//        ProcessBuilder builder = new ProcessBuilder("pwd");
 
         try {
             StringBuilder res = new StringBuilder();
@@ -31,20 +34,20 @@ class KataGoApplicationTests {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        res.append(line);
+                        res.append(line).append("\n");
                     }
                 } catch (IOException ignored) {
                 }
             });
             outputThread1.start();
 
-//            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()))) {
-//                writer.write("quit\n");
-//                writer.flush();
-//            } catch (IOException e) {
-//                System.out.println(e.getMessage());
-//                assert false;
-//            }
+            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()))) {
+                writer.write("quit\n");
+                writer.flush();
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+                assert false;
+            }
 
             process.waitFor();
             outputThread1.join();
@@ -55,6 +58,7 @@ class KataGoApplicationTests {
             assert false;
         }
 
+        return Result.ok("OK", null);
     }
 
 }
