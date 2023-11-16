@@ -248,8 +248,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         return board.getKoPos()[0] == r && board.getKoPos()[1] == c;
     }
 
-    public boolean tryTake(int r, int c, ChessBoard board) { // if killed successfully, modify the board directly
-        boolean ret = false;
+    public int tryTake(int r, int c, ChessBoard board) { // if killed successfully, modify the board directly
         int numOfTaken = 0;
         for (int i = 0; i < 4; i++) {
             int nr = r + dr[i], nc = c + dc[i];
@@ -261,17 +260,10 @@ public class ChessBoardServiceImpl implements ChessBoardService {
             }
             if (isNoLiberty(nr, nc, board) && !testKo(nr, nc, board)) {
                 numOfTaken += take(nr, nc, board);
-                ret = true;
             }
         }
 
-        board.flushKo();
-        if (numOfTaken == 1) {
-            // activate Ko
-            board.setOnKo(true);
-            board.setKoPos(new int[] {r, c});
-        }
-        return ret;
+        return numOfTaken;
     }
 
     public boolean isNoLiberty(int r, int c, ChessBoard board) {
@@ -350,6 +342,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
             boardSave[i] = Arrays.copyOf(board.getBoard()[i], board.getBoardSize());
         }
         boolean isValidMove = false;
+        int numOfTaken = 0;
         try {
             if (type != turnPlayerIntoChessboardColor(board.getNowPlayer())) {
                 // not this player's turn to move
@@ -360,8 +353,14 @@ public class ChessBoardServiceImpl implements ChessBoardService {
                 return false;
             }
             board.getBoard()[r][c] = type;
-            if (tryTake(r, c, board)) {
+            numOfTaken = tryTake(r, c, board);
+            if (numOfTaken != 0) {
                 isValidMove = true;
+                if (numOfTaken == 1) {
+                    // activate ko
+                    board.setOnKo(true);
+                    board.setKoPos(new int[] {r, c});
+                }
             }
             if (!isNoLiberty(r, c, board)) {
                 isValidMove = true;
@@ -374,6 +373,9 @@ public class ChessBoardServiceImpl implements ChessBoardService {
                     turnChessboardColorIntoPlayer(1 -
                             turnPlayerIntoChessboardColor(board.getNowPlayer())
                     ));
+            if (numOfTaken != 1) {
+                board.flushKo();
+            }
         } else {
             board.getBoard()[r][c] = ChessBoard.EMPTY;
         }
