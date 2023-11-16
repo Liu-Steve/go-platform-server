@@ -26,3 +26,5 @@ logging:
   level:
     root: info
     com.goplatform.server: debug
+katago:
+  url: https://dragondj.space/
