@@ -65,8 +65,9 @@ public class KataGoController {
     }
 
     @PostMapping("/count")
-    public KataCount count(BoardVO board) {
-        return new KataCount();
+    public Result count(BoardVO board) {
+//        return new KataCount();
+        return Result.ok("OK", new KataCount());
     }
 
 }
