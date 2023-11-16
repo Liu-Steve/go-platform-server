@@ -5,7 +5,11 @@ import com.goplatform.server.exception.ExceptionEnum;
 import com.goplatform.server.exception.GoServerException;
 import com.goplatform.server.pojo.constant.KataUrl;
 import com.goplatform.server.pojo.domain.KataCount;
+import com.goplatform.server.pojo.domain.Room;
+import com.goplatform.server.pojo.entity.UserEntity;
 import com.goplatform.server.service.KataService;
+import com.goplatform.server.service.RoomService;
+import com.goplatform.server.utils.PublicUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -14,15 +18,17 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 @Service
 public class KataServiceImpl implements KataService {
 
     @Resource
-    RestTemplate restTemplate;
-
+    private RestTemplate restTemplate;
     @Resource
-    KataUrl kataUrl;
+    private RoomService roomService;
+    @Resource
+    private KataUrl kataUrl;
 
     public KataCount endCount(int[][] board) {
         KataCount ret;
@@ -35,4 +41,10 @@ public class KataServiceImpl implements KataService {
             throw new GoServerException(ExceptionEnum.KATA_GET_FAILED);
         }
     }
+
+    @Override
+    public Room createKataRoom(Long userId) {
+        return roomService.createRoom(userId);
+    }
+
 }

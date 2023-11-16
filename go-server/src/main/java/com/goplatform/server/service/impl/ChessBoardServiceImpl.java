@@ -101,15 +101,20 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         ChessWebSocketHandler.checkWebSocketConnection(userId);
         Room room = scheduler.getRoom(roomId);
         int type = checkDropPermission(userId, room);
-        // 如果对方已经挺了一首，则判断两人是否要结束棋局
+        // 如果对方已经停了一手，则判断两人是否要结束棋局
         if (room.getChessBoard().getStatus().equals(ChessBoardStatus.StopOnce)) {
             if (type == ChessBoard.BLACK) {
                 room.getChessBoard().setNowPlayer(Player.WHITE_PLAYER);
             } else if (type == ChessBoard.WHITE) {
                 room.getChessBoard().setNowPlayer(Player.BLACK_PLAYER);
             }
-            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getBlackPlayerId(), room.getChessBoard(), WebSocketResult.CHESS_REQUEST_STOP);
-            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), room.getChessBoard(), WebSocketResult.CHESS_REQUEST_STOP);
+            KataCount res = kataService.endCount(room.getChessBoard().getBoard());
+            JSONObject object = new JSONObject();
+            object.put("white", res.getWhite());
+            object.put("black", res.getBlack());
+            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getBlackPlayerId(), object, WebSocketResult.CHESS_REQUEST_STOP);
+            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), object, WebSocketResult.CHESS_REQUEST_STOP);
+            return room.getChessBoard();
         }
         // 通知对手自己停一手，并也要告知自己，自己停了一手
         if (type == ChessBoard.BLACK) {

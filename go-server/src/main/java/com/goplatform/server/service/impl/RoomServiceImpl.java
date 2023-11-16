@@ -30,8 +30,6 @@ public class RoomServiceImpl implements RoomService {
 
     private static final Logger logger = LoggerFactory.getLogger(RoomServiceImpl.class);
     @Resource
-    private ChessBoardService chessBoardService;
-    @Resource
     private UserRepository userRepository;
     @Resource
     private Scheduler scheduler;

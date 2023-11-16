@@ -10,6 +10,7 @@ public class WebSocketResult {
     public static final int CHESS_STOP_ONCE = 2;
     public static final int CHESS_STOP_ONCE_ANOTHER = 3;
     public static final int CHESS_REQUEST_STOP = 4;
+    public static final int CHESS_STOP = 5;
     public static final int ROOM_ENTER = 10;
     public static final int ROOM_EXIT = 11;
     private int mode;
