@@ -1,7 +1,10 @@
 package com.goplatform.katago.controller;
 
+import com.goplatform.katago.pojo.BoardVO;
+import com.goplatform.katago.pojo.KataCount;
 import com.goplatform.katago.pojo.Result;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -59,6 +62,11 @@ public class KataGoController {
         }
 
         return Result.ok("OK", null);
+    }
+
+    @PostMapping("/count")
+    public KataCount count(BoardVO board) {
+        return new KataCount();
     }
 
 }

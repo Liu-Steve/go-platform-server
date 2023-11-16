@@ -13,11 +13,12 @@ public class KataAgent {
     String neuralUrl = NEURAL_URL;
     //config package
     String configUrl = CONFIG_URL;
-    //kata-process
-    ProcessBuilder builder;
     //search-param
     int countPointWidth = COUNT_POINT_WIDTH;
     int countPointDepth = COUNT_POINT_DEPTH;
+
+    //kata-process
+    ProcessBuilder builder;
 
     //init
     public String kataInit() {
