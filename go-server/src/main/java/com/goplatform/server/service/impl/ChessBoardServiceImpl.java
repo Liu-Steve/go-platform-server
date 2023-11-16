@@ -101,15 +101,20 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         ChessWebSocketHandler.checkWebSocketConnection(userId);
         Room room = scheduler.getRoom(roomId);
         int type = checkDropPermission(userId, room);
-        // 如果对方已经挺了一首，则判断两人是否要结束棋局
+        // 如果对方已经停了一手，则判断两人是否要结束棋局
         if (room.getChessBoard().getStatus().equals(ChessBoardStatus.StopOnce)) {
             if (type == ChessBoard.BLACK) {
                 room.getChessBoard().setNowPlayer(Player.WHITE_PLAYER);
             } else if (type == ChessBoard.WHITE) {
                 room.getChessBoard().setNowPlayer(Player.BLACK_PLAYER);
             }
-            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getBlackPlayerId(), room.getChessBoard(), WebSocketResult.CHESS_REQUEST_STOP);
-            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), room.getChessBoard(), WebSocketResult.CHESS_REQUEST_STOP);
+            KataCount res = kataService.endCount(room.getChessBoard().getBoard());
+            JSONObject object = new JSONObject();
+            object.put("white", res.getWhite());
+            object.put("black", res.getBlack());
+            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getBlackPlayerId(), object, WebSocketResult.CHESS_STOP);
+            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), object, WebSocketResult.CHESS_STOP);
+            return room.getChessBoard();
         }
         // 通知对手自己停一手，并也要告知自己，自己停了一手
         if (type == ChessBoard.BLACK) {
@@ -248,8 +253,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         return board.getKoPos()[0] == r && board.getKoPos()[1] == c;
     }
 
-    public boolean tryTake(int r, int c, ChessBoard board) { // if killed successfully, modify the board directly
-        boolean ret = false;
+    public int tryTake(int r, int c, ChessBoard board) { // if killed successfully, modify the board directly
         int numOfTaken = 0;
         for (int i = 0; i < 4; i++) {
             int nr = r + dr[i], nc = c + dc[i];
@@ -261,17 +265,10 @@ public class ChessBoardServiceImpl implements ChessBoardService {
             }
             if (isNoLiberty(nr, nc, board) && !testKo(nr, nc, board)) {
                 numOfTaken += take(nr, nc, board);
-                ret = true;
             }
         }
 
-        board.flushKo();
-        if (numOfTaken == 1) {
-            // activate Ko
-            board.setOnKo(true);
-            board.setKoPos(new int[] {r, c});
-        }
-        return ret;
+        return numOfTaken;
     }
 
     public boolean isNoLiberty(int r, int c, ChessBoard board) {
@@ -350,6 +347,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
             boardSave[i] = Arrays.copyOf(board.getBoard()[i], board.getBoardSize());
         }
         boolean isValidMove = false;
+        int numOfTaken = 0;
         try {
             if (type != turnPlayerIntoChessboardColor(board.getNowPlayer())) {
                 // not this player's turn to move
@@ -360,8 +358,14 @@ public class ChessBoardServiceImpl implements ChessBoardService {
                 return false;
             }
             board.getBoard()[r][c] = type;
-            if (tryTake(r, c, board)) {
+            numOfTaken = tryTake(r, c, board);
+            if (numOfTaken != 0) {
                 isValidMove = true;
+                if (numOfTaken == 1) {
+                    // activate ko
+                    board.setOnKo(true);
+                    board.setKoPos(new int[] {r, c});
+                }
             }
             if (!isNoLiberty(r, c, board)) {
                 isValidMove = true;
@@ -374,6 +378,9 @@ public class ChessBoardServiceImpl implements ChessBoardService {
                     turnChessboardColorIntoPlayer(1 -
                             turnPlayerIntoChessboardColor(board.getNowPlayer())
                     ));
+            if (numOfTaken != 1) {
+                board.flushKo();
+            }
         } else {
             board.getBoard()[r][c] = ChessBoard.EMPTY;
         }
