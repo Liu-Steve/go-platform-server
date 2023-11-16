@@ -112,8 +112,8 @@ public class ChessBoardServiceImpl implements ChessBoardService {
             JSONObject object = new JSONObject();
             object.put("white", res.getWhite());
             object.put("black", res.getBlack());
-            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getBlackPlayerId(), object, WebSocketResult.CHESS_REQUEST_STOP);
-            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), object, WebSocketResult.CHESS_REQUEST_STOP);
+            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getBlackPlayerId(), object, WebSocketResult.CHESS_STOP);
+            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), object, WebSocketResult.CHESS_STOP);
             return room.getChessBoard();
         }
         // 通知对手自己停一手，并也要告知自己，自己停了一手
