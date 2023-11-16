@@ -74,4 +74,21 @@ class ChessBoardServiceImplTest {
         System.out.println(res);
         System.out.println(chessBoard);
     }
+
+    @Test
+    void testSnapBack() {
+        ChessBoard chessBoard = new ChessBoard();
+        ChessBoardConfig config = new ChessBoardConfig();
+        config.init(new ChessBoardConfig(), 1L);
+        chessBoard.init(config);
+        int[][] bd = chessBoard.getBoard();
+        bd[0][1] = bd[1][1] = bd[2][0] = 1;
+        bd[0][2] = bd[1][2] = bd[2][1] = 0;
+        boolean res = chessBoardService.doOneMove(18, 18, 1, chessBoard);
+        res = chessBoardService.doOneMove(1, 0, 0, chessBoard);
+        res = chessBoardService.doOneMove(0, 0, 1, chessBoard);
+        res = chessBoardService.doOneMove(1, 0, 0, chessBoard);
+
+        System.out.println(res);
+    }
 }

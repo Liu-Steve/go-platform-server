@@ -254,7 +254,9 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         for (int i = 0; i < 4; i++) {
             int nr = r + dr[i], nc = c + dc[i];
             if (nr < 0 || nr >= board.getBoardSize() ||
-                    nc < 0 || nc >= board.getBoardSize()) {
+                    nc < 0 || nc >= board.getBoardSize() ||
+                board.getBoard()[nr][nc] == board.getBoard()[r][c] ||
+                board.getBoard()[nr][nc] == -1) {
                 continue;
             }
             if (isNoLiberty(nr, nc, board) && !testKo(nr, nc, board)) {
