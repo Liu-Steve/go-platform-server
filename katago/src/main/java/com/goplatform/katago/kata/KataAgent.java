@@ -1,4 +1,6 @@
-package com.goplatform.katago.pojo;
+package com.goplatform.katago.kata;
+
+import com.goplatform.katago.pojo.Player;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -23,25 +25,20 @@ public class KataAgent {
     //init
     public String kataInit() {
 
-        builder = new ProcessBuilder(
-                kataUrl, "gtp", "-model", neuralUrl, "-config", configUrl
-        );
+        builder = new ProcessBuilder(kataUrl, "gtp", "-model", neuralUrl, "-config", configUrl);
 
         StringBuilder res = new StringBuilder();
 
 
         try {
             Process process = builder.start();
-            //process = builder.start();
 
             // 处理进程的输出
-            // thread is temp
 
             Thread outputThread = new Thread(() -> {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        //System.out.println(line);
                         res.append(line);
                     }
                 } catch (IOException e) {
@@ -93,95 +90,21 @@ public class KataAgent {
 
     //clear
     public String kataClear(Process process) {
-
-        //StringBuilder res = new StringBuilder();
-
-
         try {
-            //Process process = builder.start();
-            // 处理进程的输出
-            // thread is temp
-            /*
-            Thread outputThread1 = new Thread(() -> {
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        //System.out.println(line);
-                        res.append(line);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-            outputThread1.start();
-            */
-
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
             writer.write("clear_board\n");
             writer.flush();
             //writer can't close here
-
-
-            // 向进程发送命令
-            /*/
-            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()))) {
-                writer.write("clear_board\n");
-                writer.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            */
-
-            // 等待输出线程结束
-            //outputThread1.join();
-
-            // 等待进程结束
-            //process.waitFor();
-            //} catch (IOException | InterruptedException e) {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        //String finalRes = res.toString();
-        //String result;
-        //
-        //if(finalRes.equals("= ")){
-        //   result="clear yes";
-        //}else{
-        //    result="clear no";
-        //}
-
-
         return null;
     }
 
 
     //setboard
     public String kataSetBoard(int boardsize, int[][] board, Player player, Process process) {
-
-        //StringBuilder res = new StringBuilder();
-
-
         try {
-            //Process process = builder.start();
-            // 处理进程的输出
-            // thread is temp
-            /*
-            Thread outputThread1 = new Thread(() -> {
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        //System.out.println(line);
-                        res.append(line);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-            outputThread1.start();
-            */
-
-
             // 向进程发送命令
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
             writer.write("boardsize " + Integer.toString(boardsize) + "\n");
@@ -195,11 +118,11 @@ public class KataAgent {
                         case -1:
                             break;
                         case 0:
-                            writer.write("play white " + Character.toString((char) ('A' + row)) + Integer.toString(col) + "\n");
+                            writer.write("play white " + (char) ('A' + row) + col + "\n");
                             writer.flush();
                             break;
                         case 1:
-                            writer.write("play black " + Character.toString((char) ('A' + row)) + Integer.toString(col) + "\n");
+                            writer.write("play black " + (char) ('A' + row) + col + "\n");
                             writer.flush();
                             break;
                         default:
@@ -214,27 +137,9 @@ public class KataAgent {
                 writer.write("play black pass\n");
                 writer.flush();
             }
-
-
-            // 等待输出线程结束
-            //outputThread1.join();
-
-            // 等待进程结束
-            //process.waitFor();
-            //} catch (IOException | InterruptedException e) {\
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        //String finalRes = res.toString();
-        //String result;
-
-        //if(!finalRes.equals("")){
-        //    result="set yes";
-        //}else{
-        //   result="set no";
-        //}
-
 
         return null;
     }
@@ -256,13 +161,8 @@ public class KataAgent {
                     String line;
 
                     while ((line = reader.readLine()) != null) {
-                        //one line for maxmoves moves in the order
-                        //tongbu fangcun
-                        //synchronized (res) {
                         res.add(line);
-                        //}
                     }
-
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -270,26 +170,17 @@ public class KataAgent {
             });
             outputThread1.start();
 
-
             // 向进程发送命令
             try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()))) {
-                //writer.write("kata-analyze "+" interval "+Integer.toString(200)+ " maxmoves "+Integer.toString(maxmoves)+" ownership true"+"\n");
-
-                //
                 kataClear(process);
                 kataSetBoard(boardsize, board, player, process);
 
-
                 //predict
                 boolean notFound = true;
-                //System.out.println("find drop");
                 //re for the number
                 while (notFound) {
-                    //System.out.println("finding\n");
-
-
                     //predict
-                    writer.write("kata-analyze interval 200 maxmoves " + Integer.toString(maxmoves) + "\n");
+                    writer.write("kata-analyze interval 200 maxmoves " + maxmoves + "\n");
                     writer.flush();
                     //jian ge tai xiao, res hui bei zang du ying xiang xiu gai
                     Thread.sleep(10 * 200);
@@ -297,24 +188,18 @@ public class KataAgent {
                     writer.flush();
                     Thread.sleep(500);
 
-                    //System.out.println( countSubstringOccurrences(res.get(res.size()-1),"visit"));
                     //find aprop visits
-                    ArrayList<String> tempRes = new ArrayList<>();
-                    tempRes.addAll(res);
+                    ArrayList<String> tempRes = new ArrayList<>(res);
                     int lastInfosIndex = Math.max(tempRes.size() - 2, 0);
-                    //System.out.println(res.size());
                     if (tempRes.isEmpty()) {
                         Thread.sleep(1000);
                     } else {
                         int visitIndex = tempRes.get(lastInfosIndex).indexOf("visits ");
-                        //System.out.println("visitIndex:"+Integer.toString(visitIndex));
                         if (visitIndex == -1) {
-                            //System.out.println("continue");
                             continue;
                         }
                         int numberEndIndex = tempRes.get(lastInfosIndex).indexOf(" ", visitIndex + "visits ".length());
                         int maxVists = Integer.parseInt(tempRes.get(lastInfosIndex).substring(visitIndex + "visits ".length(), numberEndIndex));
-                        //System.out.println("visits:"+Integer.toString(maxVists));
                         if (maxVists > visits) {
                             //the first order is max winrate
                             int moveIndex = tempRes.get(lastInfosIndex).indexOf("move ");
@@ -322,13 +207,9 @@ public class KataAgent {
                             nextMove = tempRes.get(lastInfosIndex).substring(moveIndex + "move ".length(), moveEndIndex);
                             notFound = false;
                         } else {
-                            //res.clear();
                         }
                     }
-
                 }
-
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -462,11 +343,9 @@ public class KataAgent {
             e.printStackTrace();
         }
 
-
         int[] result = new int[2];
         result[player.ordinal()] = pointScore;
         result[1 - player.ordinal()] = antiPointScore;
-
 
         return result;
     }
@@ -475,7 +354,6 @@ public class KataAgent {
     public String kataQuit() {
 
         StringBuilder res = new StringBuilder();
-
 
         try {
             Process process = builder.start();
@@ -486,7 +364,6 @@ public class KataAgent {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        //System.out.println(line);
                         res.append(line);
                     }
                 } catch (IOException e) {
@@ -495,12 +372,10 @@ public class KataAgent {
             });
             outputThread1.start();
 
-
             // 向进程发送命令
             try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()))) {
                 writer.write("quit\n");
                 writer.flush();
-
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -524,10 +399,8 @@ public class KataAgent {
             result = "quit no";
         }
 
-
         return result;
     }
-
 
     public static int countSubstringOccurrences(String text, String substring) {
         int count = 0;
