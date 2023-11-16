@@ -14,7 +14,8 @@ public enum ExceptionEnum {
     CHESS_USER_PERMISSION_DENY(12002, "用户暂无法执行该操作"),
     CHESS_DROP_FAILED(12003, "落子失败"),
     CHESS_ROOM_NOT_FILL(12004, "开始棋局失败，房间未满"),
-    CHESS_ROOM_NOT_INIT(12005, "棋局还未开始");
+    CHESS_ROOM_NOT_INIT(12005, "棋局还未开始"),
+    KATA_GET_FAILED(13001, "对Katago服务器访问失败");
     private int errorCode;
     private String errorMessage;
 

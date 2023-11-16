@@ -9,6 +9,7 @@ import com.goplatform.server.pojo.constant.Player;
 import com.goplatform.server.pojo.domain.*;
 import com.goplatform.server.repository.UserRepository;
 import com.goplatform.server.service.ChessBoardService;
+import com.goplatform.server.service.KataService;
 import com.goplatform.server.utils.PublicUtil;
 import com.goplatform.server.websocket.ChessWebSocketHandler;
 import com.goplatform.server.websocket.WebSocketResult;
@@ -26,6 +27,9 @@ public class ChessBoardServiceImpl implements ChessBoardService {
     private UserRepository userRepository;
     @Resource
     private Scheduler scheduler;
+
+    @Resource
+    private KataService kataService;
 
     @Override
     public Room createChessBoard(Long userId, Long roomId, ChessBoardConfig chessBoardConfig) {
@@ -163,10 +167,10 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         ChessWebSocketHandler.checkWebSocketConnection(userId);
         Room room = scheduler.getRoom(roomId);
         checkDropPermission(userId, room);
-        int[] res = GoScoring.score1(room.getChessBoard().getBoard());
+        KataCount res = kataService.endCount(room.getChessBoard().getBoard());
         JSONObject object = new JSONObject();
-        object.put("white", res[0]);
-        object.put("black", res[1]);
+        object.put("white", res.getWhite());
+        object.put("black", res.getBlack());
         return object;
     }
 
