@@ -40,6 +40,18 @@ public class RoomController {
     }
 
     /**
+     *
+     * 创建人机对战房间
+     * @param userId 房间创建用户
+     * @return 人机对战信息
+     */
+    @PutMapping("/kata/{userId}")
+    public Result createKataRoom(@PathVariable Long userId) {
+        Room kataRoom = roomService.createKataRoom(userId);
+        return Result.ok(kataRoom);
+    }
+
+    /**
      * 进入房间接口
      *
      * @param userId 进入房间用户

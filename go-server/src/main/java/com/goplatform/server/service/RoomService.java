@@ -8,6 +8,7 @@ public interface RoomService {
 
     
     Room createRoom(Long userId);
+    Room createKataRoom(Long userId);
 
     Room enterRoom(Long userId, Long roomId);
 

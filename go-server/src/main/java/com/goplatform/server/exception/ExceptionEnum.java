@@ -10,6 +10,7 @@ public enum ExceptionEnum {
     USER_USER_STATUS_INVALID(10007, "用户状态错误！无法进行该操作"),
     ROOM_ID_INVALID(11001, "房间id: %s无效！"),
     ROOM_USER_NOT_INSIDE(11002, "用户：%s 不在房间%s 中！"),
+    ROOM_KATA_ROOM_ENTER_ERROR(11003, "不可进入人机对战房间"),
     CHESS_SOCKET_CONNECTION_NOT_EXIST(12001, "用户未建立websocket连接"),
     CHESS_USER_PERMISSION_DENY(12002, "用户暂无法执行该操作"),
     CHESS_DROP_FAILED(12003, "落子失败"),

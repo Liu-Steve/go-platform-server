@@ -41,7 +41,7 @@ public class RoomServiceImpl implements RoomService {
      * @return
      */
     public Room createRoom(Long userId) {
-
+        ChessWebSocketHandler.checkWebSocketConnection(userId);
         // 检查用户是否合法
         UserEntity userEntity = checkAndGetUser(userId, UserEntity.USER_STATUS_FREE);
         // 创建房间
@@ -52,7 +52,34 @@ public class RoomServiceImpl implements RoomService {
         roomNew.setCreateUserName(userEntity.getUsername());
         roomNew.setPersonCount(1);
         roomNew.setCreatedate(new Date());
-        scheduler.addRoom(roomNew);
+        scheduler.addRoom(roomNew, false);
+        // 更新用户状态
+        scheduler.addUserRoom(userId, roomNew);
+        userRepository.updateStatusByUserId(UserEntity.USER_STATUS_BUSY, userId);
+        return roomNew;
+    }
+
+    /**
+     * 创建人机对战房间，并且AI用户进入房间
+     *
+     * @param userId
+     * @return
+     */
+    @Override
+    public Room createKataRoom(Long userId) {
+        ChessWebSocketHandler.checkWebSocketConnection(userId);
+        // 检查用户是否合法
+        UserEntity userEntity = checkAndGetUser(userId, UserEntity.USER_STATUS_FREE);
+        // 创建房间，并且AI进入房间
+        Room roomNew = new Room();
+        long roomID = PublicUtil.getUUID();
+        roomNew.setRoomId(roomID);
+        roomNew.setCreateUserId(userId);
+        roomNew.setCreateUserName(userEntity.getUsername());
+        roomNew.setSecondUserId(-1L);
+        roomNew.setPersonCount(2);
+        roomNew.setCreatedate(new Date());
+        scheduler.addRoom(roomNew, true);
         // 更新用户状态
         scheduler.addUserRoom(userId, roomNew);
         userRepository.updateStatusByUserId(UserEntity.USER_STATUS_BUSY, userId);
@@ -70,6 +97,9 @@ public class RoomServiceImpl implements RoomService {
         ChessWebSocketHandler.checkWebSocketConnection(userId);
         // 校验并获得用户信息
         UserEntity userEntity = checkAndGetUser(userId, UserEntity.USER_STATUS_FREE);
+        if (scheduler.isKataRoom(roomId)) {
+            throw new GoServerException(ExceptionEnum.ROOM_KATA_ROOM_ENTER_ERROR);
+        }
         // 获得对应的房间
         Room room = scheduler.getRoom(roomId);
 
@@ -89,6 +119,7 @@ public class RoomServiceImpl implements RoomService {
      * 1、如果房间只有一个人，则删除房间
      * 2、如果房间有两个人，非房主退出，正常维护
      * 3、如果房间有两个人，房主退出房间，则另一个人升级为房主
+     * 4、如果是人机对战房间，则直接退出，并销毁房间
      *
      * @param userId 退出房间的用户Id
      * @param roomId 退出的房间Id
@@ -104,8 +135,9 @@ public class RoomServiceImpl implements RoomService {
             throw new GoServerException(ExceptionEnum.ROOM_USER_NOT_INSIDE, userEntity.getUsername(), roomId);
         }
 
+        // 如果是人机对战房间，则直接退出，并销毁房间
         // 如果房间只有一个人，则删除房间
-        if (room.getPersonCount() == 1) {
+        if (room.getPersonCount() == 1 || scheduler.isKataRoom(roomId)) {
             scheduler.removeRoom(roomId);
         }
 

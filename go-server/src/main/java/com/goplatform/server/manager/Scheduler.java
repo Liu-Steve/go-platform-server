@@ -17,30 +17,54 @@ public class Scheduler {
     // 用于存储创建的房间，键为房间Id，值为具体房间
     private final ConcurrentHashMap<Long, Room> roomMaps = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, Room> userRoomMaps = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, Room> kataRoomMaps = new ConcurrentHashMap<>();
 
-    public Room addRoom(Room room) {
+    public Room addRoom(Room room, Boolean isKata) {
         Long roomId = room.getRoomId();
+        if (isKata) {
+            return kataRoomMaps.put(roomId, room);
+        }
         return roomMaps.put(roomId, room);
     }
 
     public Room getRoom(Long roomId) {
         // 校验RoomId是否正确
-        if (roomId == null || !roomMaps.containsKey(roomId) || roomMaps.get(roomId) == null) {
-            throw new GoServerException(ExceptionEnum.ROOM_ID_INVALID, roomId);
+        if (roomId == null) {
+            throw new GoServerException(ExceptionEnum.ROOM_ID_INVALID, "null");
         }
-        return roomMaps.get(roomId);
+        if (roomMaps.containsKey(roomId) && roomMaps.get(roomId) != null) {
+            return roomMaps.get(roomId);
+        }
+        if (kataRoomMaps.containsKey(roomId) && kataRoomMaps.get(roomId) != null) {
+            return kataRoomMaps.get(roomId);
+        }
+        throw new GoServerException(ExceptionEnum.ROOM_ID_INVALID, roomId);
     }
 
     public Room removeRoom(Long roomId) {
         // 校验RoomId是否正确
-        if (roomId == null || !roomMaps.containsKey(roomId) || roomMaps.get(roomId) == null) {
-            throw new GoServerException(ExceptionEnum.ROOM_ID_INVALID, roomId);
+        if (roomId == null) {
+            throw new GoServerException(ExceptionEnum.ROOM_ID_INVALID, "null");
         }
-        return roomMaps.remove(roomId);
+        if (roomMaps.containsKey(roomId)) {
+            return roomMaps.remove(roomId);
+        }
+        if (kataRoomMaps.containsKey(roomId)) {
+            return kataRoomMaps.remove(roomId);
+        }
+        return null;
     }
 
     public Collection<Room> listRoom() {
         return roomMaps.values();
+    }
+
+    public Collection<Room> listKataRoom() {
+        return kataRoomMaps.values();
+    }
+
+    public boolean isKataRoom(Long roomId) {
+        return kataRoomMaps.containsKey(roomId);
     }
 
     public Room getUserRoom(Long userId) {
