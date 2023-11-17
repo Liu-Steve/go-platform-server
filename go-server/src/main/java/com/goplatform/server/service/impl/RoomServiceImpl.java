@@ -102,7 +102,9 @@ public class RoomServiceImpl implements RoomService {
         }
         // 获得对应的房间
         Room room = scheduler.getRoom(roomId);
-
+        if (room.getPersonCount() == 2) {
+            throw new GoServerException(ExceptionEnum.ROOM_ALREADY_FULL);
+        }
         // 更新房间信息
         room.setSecondUserId(userId);
         room.setPersonCount(2);
