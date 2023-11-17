@@ -34,17 +34,7 @@ public class KataAgent {
             Process process = builder.start();
             List<IOException> exceptions = new ArrayList<>();
 
-            Thread outputThread = new Thread(() -> {
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        res.add(line);
-                    }
-                } catch (IOException e) {
-                    exceptions.add(e);
-                }
-            });
-            outputThread.start();
+            Thread outputThread = getOutputThread(process, res, exceptions);
 
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
             func.accept(writer);
@@ -58,6 +48,21 @@ public class KataAgent {
             throw new KataGoException(ExceptionEnum.KATA_EXE_FAIL, e.getMessage());
         }
         return res;
+    }
+
+    private static Thread getOutputThread(Process process, List<String> res, List<IOException> exceptions) {
+        Thread outputThread = new Thread(() -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    res.add(line);
+                }
+            } catch (IOException e) {
+                exceptions.add(e);
+            }
+        });
+        outputThread.start();
+        return outputThread;
     }
 
     public void init() {

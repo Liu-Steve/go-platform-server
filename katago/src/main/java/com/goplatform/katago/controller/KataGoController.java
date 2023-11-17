@@ -75,6 +75,7 @@ public class KataGoController {
     @GetMapping("/gen/{roomId}/{color}")
     public Result gen(@PathVariable long roomId, @PathVariable String color) {
         ChessDrop drop = new ChessDrop();
+        drop.setDropPosition(new ArrayList<>());
         drop.getDropPosition().add(0);
         drop.getDropPosition().add(0);
         return Result.ok(new ChessDrop()); // 返回区data为NULL代表下不了
