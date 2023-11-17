@@ -1,5 +1,6 @@
 package com.goplatform.katago;
 
+import com.goplatform.katago.kata.KataAgent;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -55,6 +56,12 @@ class KataGoApplicationTests {
             assert false;
         }
 
+    }
+
+    @Test
+    void agentTest () {
+        KataAgent agent = new KataAgent();
+        agent.init();
     }
 
 }

@@ -62,8 +62,23 @@ public class KataAgent {
 
     public void init() {
         builder = new ProcessBuilder(kataUrl, "gtp", "-model", neuralUrl, "-config", configUrl);
+
         List<String> res = dialog((writer) -> {
+            try {
+                writer.write("boardsize 19\n");
+                writer.flush();
+                writer.write("clear_board\n");
+                writer.flush();
+                writer.write("komi 0\n");
+                writer.flush();
+            } catch (IOException e) {
+                throw new KataGoException(ExceptionEnum.KATA_EXE_FAIL, e.getMessage());
+            }
         });
+
+        for (String str : res) {
+            System.out.println(str);
+        }
     }
 
     //init
