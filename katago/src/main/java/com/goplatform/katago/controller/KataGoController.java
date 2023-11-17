@@ -1,12 +1,8 @@
 package com.goplatform.katago.controller;
 
-import com.goplatform.katago.pojo.BoardVO;
-import com.goplatform.katago.pojo.KataCount;
+import com.goplatform.katago.pojo.ChessDrop;
 import com.goplatform.katago.pojo.Result;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
 
@@ -64,10 +60,29 @@ public class KataGoController {
         return Result.ok("OK", null);
     }
 
-    @PostMapping("/count")
-    public Result count(BoardVO board) {
-//        return new KataCount();
-        return Result.ok("OK", new KataCount());
+    @PutMapping("/start/{roomId}")
+    public Result start(@PathVariable String roomId) {
+        return null;
+    }
+
+    @PostMapping("/play/{roomId}")
+    public Result play(@PathVariable String roomId, ChessDrop drop) {
+        return null;
+    }
+
+    @GetMapping("/gen/{roomId}")
+    public Result gen(@PathVariable String roomId) {
+        return null; // 返回区data为NULL代表下不了
+    }
+
+    @GetMapping("/count/{roomId}")
+    public Result count(@PathVariable String roomId) {
+        return null; // KataCount
+    }
+
+    @DeleteMapping("/destroy/{roomId}")
+    public Result destroy(@PathVariable String roomId) {
+        return null;
     }
 
 }
