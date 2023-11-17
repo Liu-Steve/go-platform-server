@@ -6,6 +6,7 @@ import com.goplatform.katago.pojo.Result;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
+import java.util.ArrayList;
 
 import static com.goplatform.katago.pojo.Constants.*;
 import static com.goplatform.katago.pojo.Constants.CONFIG_URL;
@@ -73,6 +74,9 @@ public class KataGoController {
 
     @GetMapping("/gen/{roomId}")
     public Result gen(@PathVariable String roomId) {
+        ChessDrop drop = new ChessDrop();
+        drop.getDropPosition().add(0);
+        drop.getDropPosition().add(0);
         return Result.ok(new ChessDrop()); // 返回区data为NULL代表下不了
     }
 
