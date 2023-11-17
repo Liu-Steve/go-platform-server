@@ -126,8 +126,7 @@ public class RoomServiceImpl implements RoomService {
      * @return 退出结果
      */
     public Room exitRoom(Long userId, Long roomId) {
-        ChessWebSocketHandler.checkWebSocketConnection(userId);
-        // TODO:鉴权：用户是否存在并且在房间中
+        // 鉴权：用户是否存在并且在房间中
         UserEntity userEntity = checkAndGetUser(userId, UserEntity.USER_STATUS_BUSY);
         Room room = scheduler.getRoom(roomId);
         Room resultRoom = null;
@@ -185,7 +184,7 @@ public class RoomServiceImpl implements RoomService {
         return scheduler.getRoom(roomId);
     }
 
-    private UserEntity checkAndGetUser(Long userId, int status) {
+    public UserEntity checkAndGetUser(Long userId, int status) {
         PublicUtil.checkUserIdValid(userId, userRepository);
         UserEntity userEntity = userRepository.findById(userId).orElse(null);
         if (userEntity == null) {

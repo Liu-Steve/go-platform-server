@@ -10,6 +10,7 @@ import com.goplatform.server.pojo.entity.UserEntity;
 import com.goplatform.server.service.KataService;
 import com.goplatform.server.service.RoomService;
 import com.goplatform.server.utils.PublicUtil;
+import com.goplatform.server.websocket.ChessWebSocketHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -26,8 +27,6 @@ public class KataServiceImpl implements KataService {
     @Resource
     private RestTemplate restTemplate;
     @Resource
-    private RoomService roomService;
-    @Resource
     private KataUrl kataUrl;
 
     public KataCount endCount(int[][] board) {
@@ -40,11 +39,6 @@ public class KataServiceImpl implements KataService {
         } catch (Exception e) {
             throw new GoServerException(ExceptionEnum.KATA_GET_FAILED);
         }
-    }
-
-    @Override
-    public Room createKataRoom(Long userId) {
-        return roomService.createRoom(userId);
     }
 
 }
