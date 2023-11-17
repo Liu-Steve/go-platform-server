@@ -53,9 +53,18 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         ChessBoard chessBoard = new ChessBoard();
         chessBoard.init(config);
         room.setChessBoard(chessBoard);
-        // 4、通知黑方下棋，白方等待
-        ChessWebSocketHandler.sendResult(config.getBlackPlayerId(), chessBoard, WebSocketResult.CHESS_START);
-        ChessWebSocketHandler.sendResult(config.getWhitePlayerId(), chessBoard, WebSocketResult.CHESS_WAIT);
+        // 4、如果是PVP，通知黑方下棋，白方等待
+        if (!scheduler.isKataRoom(roomId)) {
+            ChessWebSocketHandler.sendResult(config.getBlackPlayerId(), chessBoard, WebSocketResult.CHESS_START);
+            ChessWebSocketHandler.sendResult(config.getWhitePlayerId(), chessBoard, WebSocketResult.CHESS_WAIT);
+            return room;
+        }
+        // 如果是PVE，黑方是用户则通知用户下棋
+        if (Objects.equals(room.getChessBoardConfig().getBlackPlayerId(), userId)) {
+            ChessWebSocketHandler.sendResult(userId, chessBoard, WebSocketResult.CHESS_START);
+        } else {
+            ChessWebSocketHandler.sendResult(userId, chessBoard, WebSocketResult.CHESS_WAIT);
+        }
         return room;
     }
 
