@@ -1,13 +1,12 @@
 package com.goplatform.server.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.goplatform.server.exception.ExceptionEnum;
 import com.goplatform.server.exception.GoServerException;
 import com.goplatform.server.manager.Scheduler;
 import com.goplatform.server.pojo.domain.Room;
 import com.goplatform.server.pojo.entity.UserEntity;
 import com.goplatform.server.repository.UserRepository;
-import com.goplatform.server.service.ChessBoardService;
+import com.goplatform.server.service.KataService;
 import com.goplatform.server.service.RoomService;
 import com.goplatform.server.utils.PublicUtil;
 import com.goplatform.server.websocket.ChessWebSocketHandler;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.transaction.Transactional;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Objects;
@@ -34,11 +32,14 @@ public class RoomServiceImpl implements RoomService {
     @Resource
     private Scheduler scheduler;
 
+    @Resource
+    private KataService kataService;
+
     /**
      * 创建房间，此时还未创建棋盘
      *
-     * @param userId
-     * @return
+     * @param userId 创建用户
+     * @return 创建结果
      */
     public Room createRoom(Long userId) {
         ChessWebSocketHandler.checkWebSocketConnection(userId);
@@ -62,8 +63,8 @@ public class RoomServiceImpl implements RoomService {
     /**
      * 创建人机对战房间，并且AI用户进入房间
      *
-     * @param userId
-     * @return
+     * @param userId 创建用户
+     * @return 创建结果
      */
     @Override
     public Room createKataRoom(Long userId) {
@@ -96,7 +97,7 @@ public class RoomServiceImpl implements RoomService {
     public Room enterRoom(Long userId, Long roomId) {
         ChessWebSocketHandler.checkWebSocketConnection(userId);
         // 校验并获得用户信息
-        UserEntity userEntity = checkAndGetUser(userId, UserEntity.USER_STATUS_FREE);
+        checkAndGetUser(userId, UserEntity.USER_STATUS_FREE);
         if (scheduler.isKataRoom(roomId)) {
             throw new GoServerException(ExceptionEnum.ROOM_KATA_ROOM_ENTER_ERROR);
         }
@@ -136,10 +137,11 @@ public class RoomServiceImpl implements RoomService {
             throw new GoServerException(ExceptionEnum.ROOM_USER_NOT_INSIDE, userEntity.getUsername(), roomId);
         }
 
-        // 如果是人机对战房间，则直接退出，并销毁房间
+        // 如果是人机对战房间，则直接退出，并销毁房间，销毁AI
         if (scheduler.isKataRoom(roomId)) {
             scheduler.removeRoom(roomId);
             scheduler.removeUserRoom(userId);
+            kataService.destroy(roomId);
             userRepository.updateStatusByUserId(UserEntity.USER_STATUS_FREE, userId);
             return null;
         }

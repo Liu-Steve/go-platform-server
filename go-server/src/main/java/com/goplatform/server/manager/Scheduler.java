@@ -3,6 +3,8 @@ package com.goplatform.server.manager;
 import com.goplatform.server.exception.ExceptionEnum;
 import com.goplatform.server.exception.GoServerException;
 import com.goplatform.server.pojo.domain.Room;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -19,11 +21,15 @@ public class Scheduler {
     private final ConcurrentHashMap<Long, Room> userRoomMaps = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, Room> kataRoomMaps = new ConcurrentHashMap<>();
 
+    private static final Logger logger = LoggerFactory.getLogger(Scheduler.class);
+
     public Room addRoom(Room room, Boolean isKata) {
         Long roomId = room.getRoomId();
         if (isKata) {
+            logger.debug("add kata room {}", roomId);
             return kataRoomMaps.put(roomId, room);
         }
+        logger.debug("add room {}", roomId);
         return roomMaps.put(roomId, room);
     }
 
@@ -47,9 +53,11 @@ public class Scheduler {
             throw new GoServerException(ExceptionEnum.ROOM_ID_INVALID, "null");
         }
         if (roomMaps.containsKey(roomId)) {
+            logger.debug("remove room {}", roomId);
             return roomMaps.remove(roomId);
         }
         if (kataRoomMaps.containsKey(roomId)) {
+            logger.debug("remove kata room {}", roomId);
             return kataRoomMaps.remove(roomId);
         }
         return null;
@@ -75,6 +83,7 @@ public class Scheduler {
     }
 
     public Room addUserRoom(Long userId, Room room) {
+        logger.debug("add user-room mapping user: {}, room: {}", userId, room.getRoomId());
         return userRoomMaps.put(userId, room);
     }
 
@@ -82,6 +91,7 @@ public class Scheduler {
         if (userId == null || !userRoomMaps.containsKey(userId) || userRoomMaps.get(userId) == null) {
             return null;
         }
+        logger.debug("remove user-room mapping user: {}, room: {}", userId, userRoomMaps.get(userId).getRoomId());
         return userRoomMaps.remove(userId);
     }
 }

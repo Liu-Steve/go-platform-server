@@ -5,6 +5,7 @@ import com.goplatform.server.exception.ExceptionEnum;
 import com.goplatform.server.exception.GoServerException;
 import com.goplatform.server.manager.Scheduler;
 import com.goplatform.server.pojo.constant.ChessBoardStatus;
+import com.goplatform.server.pojo.constant.Constants;
 import com.goplatform.server.pojo.constant.Player;
 import com.goplatform.server.pojo.domain.*;
 import com.goplatform.server.repository.UserRepository;
@@ -13,6 +14,8 @@ import com.goplatform.server.service.KataService;
 import com.goplatform.server.utils.PublicUtil;
 import com.goplatform.server.websocket.ChessWebSocketHandler;
 import com.goplatform.server.websocket.WebSocketResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -20,6 +23,12 @@ import java.util.*;
 
 @Service
 public class ChessBoardServiceImpl implements ChessBoardService {
+
+    public static final int OVER_STOP_ONCE_MODE = 0;
+
+    public static final int OVER_DEFEAT_MODE = 1;
+
+    private static final Logger logger = LoggerFactory.getLogger(ChessBoardServiceImpl.class);
 
     @Resource
     private UserRepository userRepository;
@@ -32,6 +41,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
     @Override
     public Room createChessBoard(Long userId, Long roomId, ChessBoardConfig chessBoardConfig) {
 
+        logger.debug("user: {} begin to create ChessBoard", roomId);
         // 1、判断用户是否有权限来创建棋盘
         PublicUtil.checkUserIdValid(userId, userRepository);
         Room room = scheduler.getRoom(roomId);
@@ -57,13 +67,19 @@ public class ChessBoardServiceImpl implements ChessBoardService {
             ChessWebSocketHandler.sendResult(config.getWhitePlayerId(), chessBoard, WebSocketResult.CHESS_WAIT);
             return room;
         }
-        // 如果是PVE，黑方是用户则通知用户下棋
+        // 如果是PVE 首先初始化AI
+        kataService.start(roomId);
+        // 黑方是用户则通知用户下棋
         if (Objects.equals(room.getChessBoardConfig().getBlackPlayerId(), userId)) {
             ChessWebSocketHandler.sendResult(userId, chessBoard, WebSocketResult.CHESS_START);
         } else {
+            // 如果用户是白方则通知用户等待，并且AI下棋
             ChessWebSocketHandler.sendResult(userId, chessBoard, WebSocketResult.CHESS_WAIT);
-            
+            // 然后AI模仿用户下棋，ws通知前端
+            ChessDrop chessDrop = kataService.gen(roomId, Constants.BLACK);
+            kataDropChess(userId, roomId, chessDrop, Constants.BLACK);
         }
+        logger.info("user: {} create ChessBoard success", roomId);
         return room;
     }
 
@@ -90,12 +106,56 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         // 2、具体下棋逻辑
         int r = chessDrop.getDropPosition().get(0);
         int c = chessDrop.getDropPosition().get(1);
+        logger.debug("user {} begin to drop ({}, {})", userId, r, c);
         if (!doOneMove(r, c, type, room.getChessBoard())) {
+            logger.debug("user {} drop ({}, {}) failed", userId, r, c);
             throw new GoServerException(ExceptionEnum.CHESS_DROP_FAILED);
         }
         // 3、WS通知自己停止，通知对手下棋
-        switchPlayer(type, room);
+        logger.info("user {} drop ({}, {}) success!", userId, r, c);
+        if (!scheduler.isKataRoom(roomId)) {
+            switchPlayer(type, room);
+            logger.info("user {} drop ({}, {}) success!", userId, r, c);
+        } else {
+            String userColor = type == ChessBoard.BLACK ? Constants.BLACK : Constants.WHITE;
+            String kataColor = type == ChessBoard.BLACK ? Constants.WHITE : Constants.BLACK;
+            // 如果是人机对战，则AI开始下棋
+            // 首先通知用户等待
+            ChessWebSocketHandler.sendResult(userId, room.getChessBoard(), WebSocketResult.CHESS_WAIT);
+            // 然后将用户下棋位置输入到AI
+            kataService.play(roomId, chessDrop, userColor);
+            // 随后AI下棋
+            ChessDrop kataChessDrop = kataService.gen(roomId, kataColor);
+            kataDropChess(userId, roomId, kataChessDrop, kataColor);
+        }
+
         return room.getChessBoard();
+    }
+
+    /**
+     * AI 下棋
+     *
+     * @return
+     */
+    public Boolean kataDropChess(Long userId, Long roomId, ChessDrop chessDrop, String color) {
+        Room room = scheduler.getRoom(roomId);
+        room.getChessBoard().setStatus(ChessBoardStatus.Going);
+        int type = color.equals(Constants.BLACK) ? ChessBoard.BLACK : ChessBoard.WHITE;
+
+        int r = chessDrop.getDropPosition().get(0);
+        int c = chessDrop.getDropPosition().get(1);
+        logger.debug("AI begin to drop ({}, {}) color: {}", r, c, color);
+        if (!doOneMove(r, c, type, room.getChessBoard())) {
+            // 如果AI无法下棋，则AI直接认输
+            logger.info("AI drop ({}, {}) color: {} failed human win!", r, c, color);
+            Object res = buildRes(roomId, OVER_DEFEAT_MODE);
+            ChessWebSocketHandler.sendResult(userId, res, WebSocketResult.CHESS_STOP);
+            return false;
+        }
+        // 下棋成功，通知用户下棋
+        ChessWebSocketHandler.sendResult(userId, room.getChessBoard(), WebSocketResult.CHESS_START);
+        logger.info("AI drop ({}, {}) color: {} success!", r, c, color);
+        return true;
     }
 
     /**
@@ -107,9 +167,24 @@ public class ChessBoardServiceImpl implements ChessBoardService {
      */
     @Override
     public ChessBoard stopOnce(Long userId, Long roomId) {
+        logger.debug("user {} begin to stop once", roomId);
         ChessWebSocketHandler.checkWebSocketConnection(userId);
         Room room = scheduler.getRoom(roomId);
         int type = checkDropPermission(userId, room);
+        // 如果人机对战中用户停了一手
+        if (scheduler.isKataRoom(roomId)) {
+            if (type == ChessBoard.BLACK) {
+                room.getChessBoard().setNowPlayer(Player.WHITE_PLAYER);
+            } else if (type == ChessBoard.WHITE) {
+                room.getChessBoard().setNowPlayer(Player.BLACK_PLAYER);
+            }
+            ChessWebSocketHandler.sendResult(userId, room.getChessBoard(), WebSocketResult.CHESS_WAIT);
+            String kataColor = type == ChessBoard.BLACK ? Constants.WHITE : Constants.BLACK;
+            ChessDrop kataChessDrop = kataService.gen(roomId, kataColor);
+            kataDropChess(userId, roomId, kataChessDrop, kataColor);
+            logger.info("user {} stop once success and AI drop over", userId);
+            return null;
+        }
         // 如果对方已经停了一手，则判断两人是否要结束棋局
         if (room.getChessBoard().getStatus().equals(ChessBoardStatus.StopOnce)) {
             if (type == ChessBoard.BLACK) {
@@ -117,20 +192,10 @@ public class ChessBoardServiceImpl implements ChessBoardService {
             } else if (type == ChessBoard.WHITE) {
                 room.getChessBoard().setNowPlayer(Player.BLACK_PLAYER);
             }
-            KataCount res = kataService.endCount(room.getRoomId());
-            JSONObject object = new JSONObject();
-            object.put("white", res.getWhite());
-            object.put("black", res.getBlack());
-            object.put("mode", 0); // 0表示双方停一手结束对局，1表示认输结束对局
-            if (res.getWhite() > res.getBlack()) {
-                object.put("winner", "white");
-            } else if (res.getWhite() < res.getBlack()) {
-                object.put("winner", "black");
-            } else {
-                object.put("winner", "equal");
-            }
-            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getBlackPlayerId(), object, WebSocketResult.CHESS_STOP);
-            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), object, WebSocketResult.CHESS_STOP);
+            Object res = buildRes(roomId, OVER_STOP_ONCE_MODE);
+            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getBlackPlayerId(), res, WebSocketResult.CHESS_STOP);
+            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), res, WebSocketResult.CHESS_STOP);
+            logger.info("user {} stop once success and over the game!", userId);
             return null;
         }
         // 通知对手自己停一手，并也要告知自己，自己停了一手
@@ -147,7 +212,24 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         room.getChessBoard().setStatus(ChessBoardStatus.StopOnce);
         // 并清除掉打劫信息
         room.getChessBoard().flushKo();
+        logger.info("user {} stop once success!", userId);
         return null;
+    }
+
+    private Object buildRes(Long roomId, int mode) {
+        KataCount res = kataService.endCount(roomId);
+        JSONObject object = new JSONObject();
+        object.put("white", res.getWhite());
+        object.put("black", res.getBlack());
+        object.put("mode", mode); // 0表示双方停一手结束对局，1表示认输结束对局
+        if (res.getWhite() > res.getBlack()) {
+            object.put("winner", "white");
+        } else if (res.getWhite() < res.getBlack()) {
+            object.put("winner", "black");
+        } else {
+            object.put("winner", "equal");
+        }
+        return object;
     }
 
     @Override
