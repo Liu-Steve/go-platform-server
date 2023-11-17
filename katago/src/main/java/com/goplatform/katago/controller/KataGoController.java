@@ -63,17 +63,17 @@ public class KataGoController {
     }
 
     @PutMapping("/start/{roomId}")
-    public Result start(@PathVariable String roomId) {
+    public Result start(@PathVariable long roomId) {
         return Result.ok();
     }
 
     @PostMapping("/play/{roomId}/{color}")
-    public Result play(@PathVariable String roomId, @PathVariable String color, ChessDrop drop) {
+    public Result play(@PathVariable long roomId, @PathVariable String color, ChessDrop drop) {
         return Result.ok();
     }
 
     @GetMapping("/gen/{roomId}/{color}")
-    public Result gen(@PathVariable String roomId, @PathVariable String color) {
+    public Result gen(@PathVariable long roomId, @PathVariable String color) {
         ChessDrop drop = new ChessDrop();
         drop.getDropPosition().add(0);
         drop.getDropPosition().add(0);
@@ -81,12 +81,12 @@ public class KataGoController {
     }
 
     @GetMapping("/count/{roomId}")
-    public Result count(@PathVariable String roomId) {
+    public Result count(@PathVariable long roomId) {
         return Result.ok(new KataCount()); // KataCount
     }
 
     @DeleteMapping("/destroy/{roomId}")
-    public Result destroy(@PathVariable String roomId) {
+    public Result destroy(@PathVariable long roomId) {
         return Result.ok();
     }
 

@@ -28,7 +28,7 @@ public class KataAgent {
     //kata-process
     ProcessBuilder builder;
 
-    public List<String> dialog(Consumer<Writer> func) {
+    public List<String> dialog(Consumer<BufferedWriter> func) {
         List<String> res = new ArrayList<>();
         try {
             Process process = builder.start();
@@ -58,6 +58,12 @@ public class KataAgent {
             throw new KataGoException(ExceptionEnum.KATA_EXE_FAIL, e.getMessage());
         }
         return res;
+    }
+
+    public void init() {
+        builder = new ProcessBuilder(kataUrl, "gtp", "-model", neuralUrl, "-config", configUrl);
+        List<String> res = dialog((writer) -> {
+        });
     }
 
     //init
