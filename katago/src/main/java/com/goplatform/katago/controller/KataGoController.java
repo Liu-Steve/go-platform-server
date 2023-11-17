@@ -68,7 +68,7 @@ public class KataGoController {
     }
 
     @PostMapping("/play/{roomId}/{color}")
-    public Result play(@PathVariable long roomId, @PathVariable String color, ChessDrop drop) {
+    public Result play(@PathVariable long roomId, @PathVariable String color, @RequestBody ChessDrop drop) {
         return Result.ok();
     }
 
