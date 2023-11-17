@@ -14,4 +14,8 @@ public class Constants {
 
     public static String ROLE_ADMIN = "admin";
 
+    public static String BLACK = "black";
+
+    public static String WHITE = "white";
+
 }

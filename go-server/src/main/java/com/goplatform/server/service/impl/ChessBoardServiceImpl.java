@@ -62,6 +62,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
             ChessWebSocketHandler.sendResult(userId, chessBoard, WebSocketResult.CHESS_START);
         } else {
             ChessWebSocketHandler.sendResult(userId, chessBoard, WebSocketResult.CHESS_WAIT);
+            
         }
         return room;
     }
@@ -85,6 +86,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         ChessWebSocketHandler.checkWebSocketConnection(userId);
         Room room = scheduler.getRoom(roomId);
         int type = checkDropPermission(userId, room);
+        room.getChessBoard().setStatus(ChessBoardStatus.Going);
         // 2、具体下棋逻辑
         int r = chessDrop.getDropPosition().get(0);
         int c = chessDrop.getDropPosition().get(1);
@@ -115,7 +117,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
             } else if (type == ChessBoard.WHITE) {
                 room.getChessBoard().setNowPlayer(Player.BLACK_PLAYER);
             }
-            KataCount res = kataService.endCount(room.getChessBoard().getBoard());
+            KataCount res = kataService.endCount(room.getRoomId());
             JSONObject object = new JSONObject();
             object.put("white", res.getWhite());
             object.put("black", res.getBlack());
@@ -187,7 +189,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         ChessWebSocketHandler.checkWebSocketConnection(userId);
         Room room = scheduler.getRoom(roomId);
         checkDropPermission(userId, room);
-        KataCount res = kataService.endCount(room.getChessBoard().getBoard());
+        KataCount res = kataService.endCount(room.getRoomId());
         JSONObject object = new JSONObject();
         object.put("white", res.getWhite());
         object.put("black", res.getBlack());

@@ -33,7 +33,7 @@ class KataServiceTest {
         res = chessBoardService.doOneMove(0, 0, 0, chessBoard);
         res = chessBoardService.doOneMove(1, 0, 1, chessBoard);
 
-        KataCount cnt = kataService.endCount(chessBoard.getBoard());
-        System.out.println(cnt);
+//        KataCount cnt = kataService.endCount(chessBoard.);
+//        System.out.println(cnt);
     }
 }
