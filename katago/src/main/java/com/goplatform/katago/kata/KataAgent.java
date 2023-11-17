@@ -1,10 +1,14 @@
 package com.goplatform.katago.kata;
 
+import com.goplatform.katago.exception.ExceptionEnum;
+import com.goplatform.katago.exception.KataGoException;
 import com.goplatform.katago.pojo.Player;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static com.goplatform.katago.pojo.Constants.*;
@@ -24,24 +28,35 @@ public class KataAgent {
     //kata-process
     ProcessBuilder builder;
 
-    public List<String> dialog(Consumer<Process> func) throws IOException, InterruptedException {
+    public List<String> dialog(Consumer<Writer> func) {
         List<String> res = new ArrayList<>();
-        Process process = builder.start();
+        try {
+            Process process = builder.start();
+            List<IOException> exceptions = new ArrayList<>();
 
-        Thread outputThread = new Thread(() -> {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    res.add(line);
+            Thread outputThread = new Thread(() -> {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        res.add(line);
+                    }
+                } catch (IOException e) {
+                    exceptions.add(e);
                 }
-            } catch (IOException ignored) {
+            });
+            outputThread.start();
+
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+            func.accept(writer);
+
+            outputThread.join();
+            process.waitFor();
+            if (!exceptions.isEmpty()) {
+                throw exceptions.get(0);
             }
-        });
-        outputThread.start();
-
-        func.accept(process);
-
-        outputThread.join();
+        } catch (IOException | InterruptedException e) {
+            throw new KataGoException(ExceptionEnum.KATA_EXE_FAIL, e.getMessage());
+        }
         return res;
     }
 
