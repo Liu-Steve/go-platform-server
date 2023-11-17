@@ -4,6 +4,8 @@ import com.goplatform.katago.pojo.Player;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 
 import static com.goplatform.katago.pojo.Constants.*;
 
@@ -21,6 +23,27 @@ public class KataAgent {
 
     //kata-process
     ProcessBuilder builder;
+
+    public List<String> dialog(Consumer<Process> func) throws IOException, InterruptedException {
+        List<String> res = new ArrayList<>();
+        Process process = builder.start();
+
+        Thread outputThread = new Thread(() -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    res.add(line);
+                }
+            } catch (IOException ignored) {
+            }
+        });
+        outputThread.start();
+
+        func.accept(process);
+
+        outputThread.join();
+        return res;
+    }
 
     //init
     public String kataInit() {
