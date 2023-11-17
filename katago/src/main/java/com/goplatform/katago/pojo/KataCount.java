@@ -7,6 +7,6 @@ public class KataCount {
 
     private int black;
 
-    private int Write;
+    private int write;
 
 }

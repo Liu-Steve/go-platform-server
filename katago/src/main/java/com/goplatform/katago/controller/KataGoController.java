@@ -67,13 +67,13 @@ public class KataGoController {
         return Result.ok();
     }
 
-    @PostMapping("/play/{roomId}")
-    public Result play(@PathVariable String roomId, ChessDrop drop) {
+    @PostMapping("/play/{roomId}/{color}")
+    public Result play(@PathVariable String roomId, @PathVariable String color, ChessDrop drop) {
         return Result.ok();
     }
 
-    @GetMapping("/gen/{roomId}")
-    public Result gen(@PathVariable String roomId) {
+    @GetMapping("/gen/{roomId}/{color}")
+    public Result gen(@PathVariable String roomId, @PathVariable String color) {
         ChessDrop drop = new ChessDrop();
         drop.getDropPosition().add(0);
         drop.getDropPosition().add(0);
