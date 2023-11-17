@@ -1,6 +1,7 @@
 package com.goplatform.katago.controller;
 
 import com.goplatform.katago.pojo.ChessDrop;
+import com.goplatform.katago.pojo.KataCount;
 import com.goplatform.katago.pojo.Result;
 import org.springframework.web.bind.annotation.*;
 
@@ -62,27 +63,27 @@ public class KataGoController {
 
     @PutMapping("/start/{roomId}")
     public Result start(@PathVariable String roomId) {
-        return null;
+        return Result.ok();
     }
 
     @PostMapping("/play/{roomId}")
     public Result play(@PathVariable String roomId, ChessDrop drop) {
-        return null;
+        return Result.ok();
     }
 
     @GetMapping("/gen/{roomId}")
     public Result gen(@PathVariable String roomId) {
-        return null; // 返回区data为NULL代表下不了
+        return Result.ok(new ChessDrop()); // 返回区data为NULL代表下不了
     }
 
     @GetMapping("/count/{roomId}")
     public Result count(@PathVariable String roomId) {
-        return null; // KataCount
+        return Result.ok(new KataCount()); // KataCount
     }
 
     @DeleteMapping("/destroy/{roomId}")
     public Result destroy(@PathVariable String roomId) {
-        return null;
+        return Result.ok();
     }
 
 }
