@@ -13,8 +13,6 @@ import com.goplatform.server.service.KataService;
 import com.goplatform.server.utils.PublicUtil;
 import com.goplatform.server.websocket.ChessWebSocketHandler;
 import com.goplatform.server.websocket.WebSocketResult;
-import jdk.nashorn.internal.ir.CallNode;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;

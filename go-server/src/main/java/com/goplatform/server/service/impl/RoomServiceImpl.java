@@ -135,8 +135,14 @@ public class RoomServiceImpl implements RoomService {
         }
 
         // 如果是人机对战房间，则直接退出，并销毁房间
+        if (scheduler.isKataRoom(roomId)) {
+            scheduler.removeRoom(roomId);
+            scheduler.removeUserRoom(userId);
+            userRepository.updateStatusByUserId(UserEntity.USER_STATUS_FREE, userId);
+            return null;
+        }
         // 如果房间只有一个人，则删除房间
-        if (room.getPersonCount() == 1 || scheduler.isKataRoom(roomId)) {
+        if (room.getPersonCount() == 1) {
             scheduler.removeRoom(roomId);
         }
 
