@@ -495,6 +495,8 @@ public class ChessBoardServiceImpl implements ChessBoardService {
             }
             // update last move
             board.setLastPos(new int[] {r, c});
+            // update records
+            board.getRecord().add(new OneMove(type, new int[] {r, c}));
             // switch player
             board.setNowPlayer(
                     turnChessboardColorIntoPlayer(1 -

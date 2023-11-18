@@ -3,14 +3,13 @@ package com.goplatform.server.pojo.domain;
 import com.goplatform.server.pojo.constant.Player;
 
 public class OneMove {
-    Player player;
+   int player;
 
     // position
-    int r, c;
+    int[] pos;
 
-    public OneMove(Player _player, int _r, int _c) {
+    public OneMove(int _player, int[] _pos) {
         player = _player;
-        r = _r;
-        c = _c;
+        pos = _pos;
     }
 }
