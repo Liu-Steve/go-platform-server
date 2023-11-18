@@ -87,8 +87,7 @@ public class ChessBoardController {
     @GetMapping("/over_request/{userId}/{roomId}")
     public Result overGameRequest(@PathVariable("userId") Long userId, @PathVariable("roomId") Long roomId) {
         // TODO 请求结束对局，并等待对手确认，返回请求结果（是否进入等待状态）
-
-        return null;
+        return Result.ok(chessBoardService.overGameRequest(userId, roomId));
     }
 
     /**
