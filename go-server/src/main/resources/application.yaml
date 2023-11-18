@@ -25,6 +25,6 @@ jwt:
 logging:
   level:
     root: info
-    com.goplatform.server: debug
+    com.goplatform.server: info
 katago:
   url: https://dragondj.space/
