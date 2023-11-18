@@ -105,7 +105,7 @@ public class ChessBoardController {
         return null;
     }
 
-    @GetMapping("result/{userId}/{roomId}")
+    @GetMapping("/result/{userId}/{roomId}")
     public Result getChessBoardResult(@PathVariable("userId") Long userId, @PathVariable("roomId") Long roomId) {
         return Result.ok(chessBoardService.getChessBoardResult(userId, roomId));
     }
