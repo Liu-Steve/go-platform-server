@@ -84,15 +84,23 @@ public class KataServiceImpl implements KataService {
         if (forObject == null) {
             throw new GoServerException(ExceptionEnum.KATA_GET_FAILED);
         }
+        if (forObject.getResult() == null) {
+            return null;
+        }
         LinkedHashMap<String, ArrayList<Integer>> result;
         try {
             result = (LinkedHashMap<String, ArrayList<Integer>>) forObject.getResult();
         } catch (Exception e) {
             throw new GoServerException(ExceptionEnum.KATA_GET_FAILED);
         }
-        ArrayList<Integer> position = null;
+
+        ArrayList<Integer> position;
         try {
+            if (!result.containsKey("dropPosition")) {
+                return null;
+            }
             position = result.get("dropPosition");
+
         } catch (Exception e) {
             throw new GoServerException(ExceptionEnum.KATA_GET_FAILED);
         }
