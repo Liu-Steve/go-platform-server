@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Set;
 
 import static com.goplatform.katago.pojo.Constants.*;
 import static com.goplatform.katago.pojo.Constants.CONFIG_URL;
@@ -95,6 +96,12 @@ public class KataGoController {
     public Result count(@PathVariable long roomId) {
         KataCount count = service.count(roomId);
         return Result.ok(count); // KataCount
+    }
+
+    @GetMapping("/list")
+    public Result list() {
+        Set<Long> rooms = service.listRoom();
+        return Result.ok(rooms);
     }
 
 }
