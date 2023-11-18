@@ -187,6 +187,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         ChessWebSocketHandler.checkWebSocketConnection(userId);
         Room room = scheduler.getRoom(roomId);
         int type = checkDropPermission(userId, room, true);
+        room.getChessBoard().getRecord().add(new OneMove(type, new int[]{-1, -1}));
         // 如果人机对战中用户停了一手
         if (scheduler.isKataRoom(roomId)) {
             room.getChessBoard().setStatus(ChessBoardStatus.StopOnce);
@@ -239,9 +240,17 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         return room.getChessBoard();
     }
 
+    /**
+     * AI 停一手
+     *
+     * @param userId 与AI对战用户
+     * @param roomId 房间ID
+     */
     private void kataStopOnce(Long userId, Long roomId) {
         logger.info("AI begin to stop once and over the game!");
         Room room = scheduler.getRoom(roomId);
+        int kataType = Objects.equals(userId, room.getChessBoardConfig().getWhitePlayerId()) ? ChessBoard.BLACK : ChessBoard.WHITE;
+        room.getChessBoard().getRecord().add(new OneMove(kataType, new int[]{-1, -1}));
         if (room.getChessBoard().getStatus() == ChessBoardStatus.StopOnce) {
             ChessWebSocketHandler.sendResult(userId, null, WebSocketResult.CHESS_READY_STOP);
             Object res = buildRes(roomId, OVER_STOP_ONCE_MODE, null);
