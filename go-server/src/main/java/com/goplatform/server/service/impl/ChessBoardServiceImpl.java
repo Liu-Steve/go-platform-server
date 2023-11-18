@@ -104,7 +104,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         // 1、校验用户是否有权限下棋（在房间中，轮到自己）
         ChessWebSocketHandler.checkWebSocketConnection(userId);
         Room room = scheduler.getRoom(roomId);
-        int type = checkDropPermission(userId, room);
+        int type = checkDropPermission(userId, room, true);
         room.getChessBoard().setStatus(ChessBoardStatus.Going);
         // 2、具体下棋逻辑
         int r = chessDrop.getDropPosition().get(0);
@@ -177,7 +177,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         logger.debug("user {} begin to stop once", roomId);
         ChessWebSocketHandler.checkWebSocketConnection(userId);
         Room room = scheduler.getRoom(roomId);
-        int type = checkDropPermission(userId, room);
+        int type = checkDropPermission(userId, room, true);
         // 如果人机对战中用户停了一手
         if (scheduler.isKataRoom(roomId)) {
             if (type == ChessBoard.BLACK) {
@@ -232,9 +232,9 @@ public class ChessBoardServiceImpl implements ChessBoardService {
             KataCount res = kataService.endCount(roomId);
             object.put("white", res.getWhite());
             object.put("black", res.getBlack());
-            if (res.getWhite() > res.getBlack()) {
+            if (res.getWhite() > res.getBlack() - 7.5) {
                 object.put("winner", "white");
-            } else if (res.getWhite() < res.getBlack()) {
+            } else if (res.getWhite() < res.getBlack() - 7.5) {
                 object.put("winner", "black");
             } else {
                 object.put("winner", "equal");
@@ -253,7 +253,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
     public ChessBoard overGameRequest(Long userId, Long roomId) {
         ChessWebSocketHandler.checkWebSocketConnection(userId);
         Room room = scheduler.getRoom(roomId);
-        int type = checkDropPermission(userId, room);
+        int type = checkDropPermission(userId, room, false);
         // 请求认输，使用websocket通知对面，更新棋盘状态，但不更新棋盘当前用户
         room.getChessBoard().setStatus(ChessBoardStatus.OverRequest);
         int resignMode = type == ChessBoard.BLACK ? OVER_BLACK_RESIGN_MODE : OVER_WHITE_RESIGN_MODE;
@@ -276,7 +276,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
     public ChessBoard overGameConfirm(Long userId, Long roomId) {
         ChessWebSocketHandler.checkWebSocketConnection(userId);
         Room room = scheduler.getRoom(roomId);
-        int type = checkDropPermission(userId, room);
+        int type = checkDropPermission(userId, room, false);
         // 请求认输，使用websocket通知对面，更新棋盘状态，但不更新棋盘当前用户
         room.getChessBoard().setStatus(ChessBoardStatus.OverRequest);
 
@@ -294,16 +294,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
     public Object getChessBoardResult(Long userId, Long roomId) {
         ChessWebSocketHandler.checkWebSocketConnection(userId);
         Room room = scheduler.getRoom(roomId);
-        PublicUtil.checkUserIdValid(userId, userRepository);
-        if (room.getChessBoardConfig() == null || room.getChessBoard() == null) {
-            logger.error("check user {} permission in room {} error chessboard not init", userId, room.getRoomId());
-            throw new GoServerException(ExceptionEnum.CHESS_ROOM_NOT_INIT);
-        }
-
-        if (!Objects.equals(room.getCreateUserId(), userId) && !Objects.equals(room.getSecondUserId(), userId)) {
-            logger.error("check user {} permission in room {} error user not inside room", userId, room.getRoomId());
-            throw new GoServerException(ExceptionEnum.CHESS_USER_PERMISSION_DENY);
-        }
+        checkDropPermission(userId, room, false);
         ChessWebSocketHandler.sendResult(userId, null, WebSocketResult.CHESS_READY_STOP);
         KataCount res = kataService.endCount(room.getRoomId());
         JSONObject object = new JSONObject();
@@ -324,7 +315,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         }
     }
 
-    private int checkDropPermission(Long userId, Room room) {
+    private int checkDropPermission(Long userId, Room room, Boolean isNeedNow) {
         logger.debug("begin to check user {} permission in room {}", userId, room.getRoomId());
         PublicUtil.checkUserIdValid(userId, userRepository);
         if (room.getChessBoardConfig() == null || room.getChessBoard() == null) {
@@ -337,14 +328,20 @@ public class ChessBoardServiceImpl implements ChessBoardService {
             throw new GoServerException(ExceptionEnum.CHESS_USER_PERMISSION_DENY);
         }
         // 判断当前用户是黑棋还是白棋
-        if (room.getChessBoardConfig().getWhitePlayerId().equals(userId)
-                && room.getChessBoard().getNowPlayer().equals(Player.WHITE_PLAYER)) {
-            return ChessBoard.WHITE;
+
+        if (isNeedNow) {
+            if (room.getChessBoardConfig().getWhitePlayerId().equals(userId)
+                    && room.getChessBoard().getNowPlayer().equals(Player.WHITE_PLAYER)) {
+                return ChessBoard.WHITE;
+            }
+            if (room.getChessBoardConfig().getBlackPlayerId().equals(userId)
+                    && room.getChessBoard().getNowPlayer().equals(Player.BLACK_PLAYER)) {
+                return ChessBoard.BLACK;
+            }
+        } else {
+            return room.getChessBoardConfig().getWhitePlayerId().equals(userId) ? ChessBoard.WHITE : ChessBoard.BLACK;
         }
-        if (room.getChessBoardConfig().getBlackPlayerId().equals(userId)
-                && room.getChessBoard().getNowPlayer().equals(Player.BLACK_PLAYER)) {
-            return ChessBoard.BLACK;
-        }
+
         throw new GoServerException(ExceptionEnum.CHESS_USER_PERMISSION_DENY);
     }
 
