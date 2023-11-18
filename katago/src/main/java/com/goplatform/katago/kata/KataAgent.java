@@ -4,14 +4,8 @@ import com.goplatform.katago.exception.ExceptionEnum;
 import com.goplatform.katago.exception.KataGoException;
 import com.goplatform.katago.pojo.ChessDrop;
 import com.goplatform.katago.pojo.KataCount;
-import com.goplatform.katago.pojo.Player;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 import static com.goplatform.katago.pojo.Constants.*;
 
@@ -102,7 +96,7 @@ public class KataAgent {
         if (!ret.startsWith("= ")) {
             throw new KataGoException(ExceptionEnum.KATA_EXE_FAIL, "返回值为" + ret);
         }
-        return new KataCount(); // DOING
+        return KataCount.stringToCount(ret.substring(2));
     }
 
 }

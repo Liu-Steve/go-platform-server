@@ -4,6 +4,7 @@ import com.goplatform.katago.exception.ExceptionEnum;
 import com.goplatform.katago.exception.KataGoException;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.goplatform.katago.pojo.Constants.BOARD_SIZE;
@@ -54,6 +55,7 @@ public class ChessDrop {
             int col = str.charAt(0) - 'A';
             int row = Integer.parseInt(str.substring(1)) - 1;
             ChessDrop drop = new ChessDrop();
+            drop.setDropPosition(new ArrayList<>());
             drop.getDropPosition().add(row);
             drop.getDropPosition().add(col);
             return drop;
