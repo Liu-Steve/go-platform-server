@@ -62,6 +62,14 @@ class KataGoApplicationTests {
     void agentTest () {
         KataAgent agent = new KataAgent();
         agent.init();
+        String str = agent.cmd("final_score");
+        System.out.println(str);
+        str = agent.cmd("genmove black");
+        System.out.println(str);
+        str = agent.cmd("genmove white");
+        System.out.println(str);
+        str = agent.cmd("final_score");
+        System.out.println(str);
     }
 
 }
