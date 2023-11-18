@@ -4,14 +4,8 @@ import com.goplatform.katago.exception.ExceptionEnum;
 import com.goplatform.katago.exception.KataGoException;
 import com.goplatform.katago.pojo.ChessDrop;
 import com.goplatform.katago.pojo.KataCount;
-import com.goplatform.katago.pojo.Player;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 import static com.goplatform.katago.pojo.Constants.*;
 
