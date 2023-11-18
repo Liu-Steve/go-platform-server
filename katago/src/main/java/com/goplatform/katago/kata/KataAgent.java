@@ -102,7 +102,7 @@ public class KataAgent {
         if (!ret.startsWith("= ")) {
             throw new KataGoException(ExceptionEnum.KATA_EXE_FAIL, "返回值为" + ret);
         }
-        return new KataCount(); // DOING
+        return KataCount.stringToCount(ret.substring(2));
     }
 
 }

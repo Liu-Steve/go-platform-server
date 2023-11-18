@@ -3,8 +3,10 @@ package com.goplatform.katago.controller;
 import com.goplatform.katago.pojo.ChessDrop;
 import com.goplatform.katago.pojo.KataCount;
 import com.goplatform.katago.pojo.Result;
+import com.goplatform.katago.service.KataAgentService;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.io.*;
 import java.util.ArrayList;
 
@@ -14,6 +16,9 @@ import static com.goplatform.katago.pojo.Constants.CONFIG_URL;
 @RestController
 @RequestMapping("/kata")
 public class KataGoController {
+
+    @Resource
+    KataAgentService service;
 
     @GetMapping("/test")
     public Result test() {
@@ -64,31 +69,32 @@ public class KataGoController {
 
     @PutMapping("/start/{roomId}")
     public Result start(@PathVariable long roomId) {
+        service.start(roomId);
+        return Result.ok();
+    }
+
+    @DeleteMapping("/destroy/{roomId}")
+    public Result destroy(@PathVariable long roomId) {
+        service.destroy(roomId);
         return Result.ok();
     }
 
     @PostMapping("/play/{roomId}/{color}")
     public Result play(@PathVariable long roomId, @PathVariable String color, @RequestBody ChessDrop drop) {
+        service.play(roomId, color, drop);
         return Result.ok();
     }
 
     @GetMapping("/gen/{roomId}/{color}")
     public Result gen(@PathVariable long roomId, @PathVariable String color) {
-        ChessDrop drop = new ChessDrop();
-        drop.setDropPosition(new ArrayList<>());
-        drop.getDropPosition().add(0);
-        drop.getDropPosition().add(0);
-        return Result.ok(new ChessDrop()); // 返回区data为NULL代表下不了
+        ChessDrop drop = service.gen(roomId, color);
+        return Result.ok(drop); // 返回区data为NULL代表下不了
     }
 
     @GetMapping("/count/{roomId}")
     public Result count(@PathVariable long roomId) {
-        return Result.ok(new KataCount()); // KataCount
-    }
-
-    @DeleteMapping("/destroy/{roomId}")
-    public Result destroy(@PathVariable long roomId) {
-        return Result.ok();
+        KataCount count = service.count(roomId);
+        return Result.ok(count); // KataCount
     }
 
 }
