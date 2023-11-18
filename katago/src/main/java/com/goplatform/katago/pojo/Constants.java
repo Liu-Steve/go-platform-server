@@ -10,6 +10,7 @@ public class Constants {
     public static final String CONFIG_URL = "./src/main/resources/kata/gtp_custom.cfg";
     public static final int COUNT_POINT_WIDTH = 3;
     public static final int COUNT_POINT_DEPTH = 10;
+    public static final int BOARD_SIZE = 19;
 
     public static int RESULT_OK = 0;
     public static int RESULT_UNKNOWN_ERROR = -1;

@@ -21,9 +21,9 @@ public class KataGoException extends RuntimeException {
     }
 
     public KataGoException(ExceptionEnum exceptionEnum, String errorMessage) {
-        super(errorMessage);
+        super(exceptionEnum.getErrorMessage() + ": " + errorMessage);
         this.errorCode = exceptionEnum.getErrorCode();
-        this.errorMessage = errorMessage;
+        this.errorMessage = exceptionEnum.getErrorMessage() + ": " + errorMessage;
     }
 
 }
