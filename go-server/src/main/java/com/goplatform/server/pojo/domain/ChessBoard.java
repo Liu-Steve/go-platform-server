@@ -30,6 +30,8 @@ public class ChessBoard {
     private boolean isOnKo;
     // 打劫坐标
     private int[] koPos;
+    // 最后一步的信息
+    private OneMove lastMove;
 
     public void init(ChessBoardConfig config) {
         boardSize = config.getBoardSize();

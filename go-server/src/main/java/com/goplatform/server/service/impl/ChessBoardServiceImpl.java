@@ -489,13 +489,17 @@ public class ChessBoardServiceImpl implements ChessBoardService {
             board.setBoard(boardSave);
         }
         if (isValidMove) {
+            // flush ko
+            if (numOfTaken != 1) {
+                board.flushKo();
+            }
+            // update last move
+            board.setLastMove(new OneMove(board.getNowPlayer(), r, c));
+            // switch player
             board.setNowPlayer(
                     turnChessboardColorIntoPlayer(1 -
                             turnPlayerIntoChessboardColor(board.getNowPlayer())
                     ));
-            if (numOfTaken != 1) {
-                board.flushKo();
-            }
         } else {
             board.getBoard()[r][c] = ChessBoard.EMPTY;
         }

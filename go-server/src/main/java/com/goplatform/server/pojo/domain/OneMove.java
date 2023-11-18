@@ -7,4 +7,10 @@ public class OneMove {
 
     // position
     int r, c;
+
+    public OneMove(Player _player, int _r, int _c) {
+        player = _player;
+        r = _r;
+        c = _c;
+    }
 }
