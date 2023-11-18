@@ -6,6 +6,7 @@ import com.goplatform.server.pojo.domain.Result;
 import com.goplatform.server.pojo.domain.User;
 import com.goplatform.server.pojo.entity.UserEntity;
 import com.goplatform.server.pojo.domain.UserLoginVO;
+import com.goplatform.server.repository.UserRepository;
 import com.goplatform.server.security.DbUserDetailService;
 import com.goplatform.server.security.JwtTokenUtil;
 import com.goplatform.server.service.UserService;
@@ -37,6 +38,8 @@ public class UserController {
     private AuthenticationManager authenticationManager;
     @Resource
     private DbUserDetailService userDetailService;
+    @Resource
+    private UserRepository userRepository;
 
     /**
      * 用户注册接口
@@ -65,6 +68,7 @@ public class UserController {
                     new UsernamePasswordAuthenticationToken(userDetails.getUsername(), user.getPassword()));
             UserEntity userEntity = userService.getUserInfoByFeature(userDetails.getUsername());
             userEntity.setPassword(null);
+            userRepository.updateStatusByUserId(UserEntity.USER_STATUS_FREE, userEntity.getId());
             final String token = JwtTokenUtil.generateToken(String.valueOf(userEntity.getId()));
             return Result.ok("OK", new JSONObject() {{
                 put("token", token);

@@ -22,7 +22,7 @@ public class ChessBoard {
     private boolean[][] boardFlag;
     // 棋盘状态 0：未开始 1：对局中 2：请求结束 3：结束（后续枚举类）
     private ChessBoardStatus status;
-    // 落子记录
+    // 落子记录， -1，-1代表停一手
     private ConcurrentLinkedQueue<OneMove> record;
     // 当前应该谁下棋 0：白色 1：黑色 （后续枚举类）
     private Player nowPlayer;
