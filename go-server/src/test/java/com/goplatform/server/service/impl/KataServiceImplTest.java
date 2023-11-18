@@ -4,6 +4,7 @@ import com.goplatform.server.pojo.constant.Constants;
 import com.goplatform.server.pojo.domain.ChessDrop;
 import com.goplatform.server.pojo.domain.KataCount;
 import com.goplatform.server.service.KataService;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,11 +17,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class KataServiceImplTest {
-
     @Resource
     private KataService kataService;
     @Test
     void endCount() {
+        start();
         KataCount kataCount = kataService.endCount(1L);
         System.out.println(kataCount);
     }
@@ -39,6 +40,7 @@ class KataServiceImplTest {
 
     @Test
     void gen() {
+        start();
         kataService.gen(1L, Constants.BLACK);
     }
 

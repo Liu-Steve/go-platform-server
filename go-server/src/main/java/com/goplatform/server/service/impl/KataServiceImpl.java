@@ -41,11 +41,6 @@ public class KataServiceImpl implements KataService {
     @SuppressWarnings("unchecked")
     public KataCount endCount(Long roomId) {
 
-        try {
-            Thread.sleep(6000);
-        } catch (Exception e) {
-            System.out.println();
-        }
         logger.debug("AI begin to count result int room {}", roomId);
         Result forObject = restTemplate.getForObject(baseUrl + endCountPath + roomId, Result.class);
         if (forObject == null) {
@@ -82,16 +77,31 @@ public class KataServiceImpl implements KataService {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public ChessDrop gen(Long roomId, String color) {
         logger.debug("AI begin to generate position in room {}", roomId);
-        ChessDrop forObject = restTemplate.getForObject(baseUrl + genPath + roomId + "/" + color, ChessDrop.class);
+        Result forObject = restTemplate.getForObject(baseUrl + genPath + roomId + "/" + color, Result.class);
         if (forObject == null) {
             throw new GoServerException(ExceptionEnum.KATA_GET_FAILED);
         }
-        forObject.setDropPosition(new ArrayList<Integer>(){{ add((int) (Math.random() * 19)); add((int) (Math.random() * 19)); }});
+        LinkedHashMap<String, ArrayList<Integer>> result;
+        try {
+            result = (LinkedHashMap<String, ArrayList<Integer>>) forObject.getResult();
+        } catch (Exception e) {
+            throw new GoServerException(ExceptionEnum.KATA_GET_FAILED);
+        }
+        ArrayList<Integer> position = null;
+        try {
+            position = result.get("dropPosition");
+        } catch (Exception e) {
+            throw new GoServerException(ExceptionEnum.KATA_GET_FAILED);
+        }
         logger.info("AI generate position row: {}, col: {} in room {} success",
-                forObject.getDropPosition().get(0), forObject.getDropPosition().get(1), roomId);
-        return forObject;
+                position.get(0), position.get(1), roomId);
+
+        ChessDrop chessDrop = new ChessDrop();
+        chessDrop.setDropPosition(position);
+        return chessDrop;
     }
 
 
