@@ -63,6 +63,8 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         ChessBoard chessBoard = new ChessBoard();
         chessBoard.init(config);
         room.setChessBoard(chessBoard);
+        // 首先初始化AI
+        kataService.start(roomId);
         // 4、如果是PVP，通知黑方下棋，白方等待
         if (!scheduler.isKataRoom(roomId)) {
             ChessWebSocketHandler.sendResult(config.getBlackPlayerId(), chessBoard, WebSocketResult.CHESS_START);
@@ -70,8 +72,6 @@ public class ChessBoardServiceImpl implements ChessBoardService {
             logger.info("user: {} create ChessBoard success", roomId);
             return room;
         }
-        // 如果是PVE 首先初始化AI
-        kataService.start(roomId);
         // 黑方是用户则通知用户下棋
         if (Objects.equals(room.getChessBoardConfig().getBlackPlayerId(), userId)) {
             ChessWebSocketHandler.sendResult(userId, chessBoard, WebSocketResult.CHESS_START);
@@ -117,6 +117,8 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         // 3、WS通知自己停止，通知对手下棋
         logger.info("user {} drop ({}, {}) success!", userId, r, c);
         if (!scheduler.isKataRoom(roomId)) {
+            String userColor = type == ChessBoard.BLACK ? Constants.BLACK : Constants.WHITE;
+            kataService.play(roomId, chessDrop, userColor);
             switchPlayer(type, room);
             logger.info("user {} drop ({}, {}) success!", userId, r, c);
         } else {

@@ -137,11 +137,11 @@ public class RoomServiceImpl implements RoomService {
             throw new GoServerException(ExceptionEnum.ROOM_USER_NOT_INSIDE, userEntity.getUsername(), roomId);
         }
 
+        kataService.destroy(roomId);
         // 如果是人机对战房间，则直接退出，并销毁房间，销毁AI
         if (scheduler.isKataRoom(roomId)) {
             scheduler.removeRoom(roomId);
             scheduler.removeUserRoom(userId);
-            kataService.destroy(roomId);
             userRepository.updateStatusByUserId(UserEntity.USER_STATUS_FREE, userId);
             return null;
         }
