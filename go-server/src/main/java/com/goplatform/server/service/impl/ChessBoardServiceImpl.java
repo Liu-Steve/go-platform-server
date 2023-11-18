@@ -26,9 +26,12 @@ public class ChessBoardServiceImpl implements ChessBoardService {
 
     public static final int OVER_STOP_ONCE_MODE = 0;
 
-    public static final int OVER_WHITE_RESIGN_MODE = 1;
+    public static final int OVER_RESIGN_MODE = 1;
 
-    public static final int OVER_BLACK_RESIGN_MODE = 2;
+    public static final String RESULT_MODE = "mode";
+
+    public static final String RESULT_WINNER = "winner";
+
 
     private static final Logger logger = LoggerFactory.getLogger(ChessBoardServiceImpl.class);
 
@@ -157,11 +160,11 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         int c = chessDrop.getDropPosition().get(1);
         logger.debug("AI begin to drop ({}, {}) color: {}", r, c, color);
         if (!doOneMove(r, c, type, room.getChessBoard())) {
-            // 如果AI无法下棋，则AI直接认输
+            // 如果AI无法下棋，则AI直接认输，通知用户即可
             logger.info("AI drop ({}, {}) color: {} failed human win!", r, c, color);
-            int resignMode = type == ChessBoard.BLACK ? OVER_BLACK_RESIGN_MODE : OVER_WHITE_RESIGN_MODE;
             ChessWebSocketHandler.sendResult(userId, null, WebSocketResult.CHESS_READY_STOP);
-            Object res = buildRes(roomId, resignMode);
+            String winnerColor = type == ChessBoard.BLACK ? Constants.BLACK : Constants.WHITE;
+            Object res = buildRes(roomId, OVER_RESIGN_MODE, winnerColor);
             ChessWebSocketHandler.sendResult(userId, res, WebSocketResult.CHESS_STOP);
             return false;
         }
@@ -212,7 +215,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
             }
             ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getBlackPlayerId(), null, WebSocketResult.CHESS_READY_STOP);
             ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), null, WebSocketResult.CHESS_READY_STOP);
-            Object res = buildRes(roomId, OVER_STOP_ONCE_MODE);
+            Object res = buildRes(roomId, OVER_STOP_ONCE_MODE, null);
             ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getBlackPlayerId(), res, WebSocketResult.CHESS_STOP);
             ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), res, WebSocketResult.CHESS_STOP);
             logger.info("user {} stop once success and over the game!", userId);
@@ -241,7 +244,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         Room room = scheduler.getRoom(roomId);
         if (room.getChessBoard().getStatus() == ChessBoardStatus.StopOnce) {
             ChessWebSocketHandler.sendResult(userId, null, WebSocketResult.CHESS_READY_STOP);
-            Object res = buildRes(roomId, OVER_STOP_ONCE_MODE);
+            Object res = buildRes(roomId, OVER_STOP_ONCE_MODE, null);
             ChessWebSocketHandler.sendResult(userId, res, WebSocketResult.CHESS_STOP);
             logger.info("AI  stop once success and over the game!");
             return;
@@ -250,30 +253,34 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         ChessWebSocketHandler.sendResult(userId, room.getChessBoard(), WebSocketResult.CHESS_STOP_ONCE_ANOTHER);
     }
 
-    private Object buildRes(Long roomId, int mode) {
+    private Object buildRes(Long roomId, int mode, String winner) {
         JSONObject object = new JSONObject();
-        object.put("mode", mode); // 0表示双方停一手结束对局，1表示认输结束对局
+        object.put(RESULT_MODE, mode); // 0表示双方停一手结束对局，1表示认输结束对局
         if (mode == OVER_STOP_ONCE_MODE) {
             KataCount res = kataService.endCount(roomId);
-            object.put("white", res.getWhite());
-            object.put("black", res.getBlack());
+            object.put(Constants.WHITE, res.getWhite());
+            object.put(Constants.BLACK, res.getBlack());
             if (res.getWhite() > res.getBlack() - 7.5) {
-                object.put("winner", "white");
+                object.put(RESULT_WINNER, Constants.WHITE);
             } else if (res.getWhite() < res.getBlack() - 7.5) {
-                object.put("winner", "black");
+                object.put(RESULT_WINNER, Constants.BLACK);
             } else {
-                object.put("winner", "equal");
+                object.put(RESULT_WINNER, Constants.EQUAL);
             }
         } else {
-            if (mode == OVER_BLACK_RESIGN_MODE) {
-                object.put("winner", "white");
-            } else {
-                object.put("winner", "black");
-            }
+            object.put(RESULT_WINNER, winner);
         }
         return object;
     }
 
+    /**
+     * 谁收到ws，并且mode为5，message.mode为1，就表示对面投降, 不用通知投降用户
+     * 投降不需要轮到自己回合
+     *
+     * @param userId 投降用户
+     * @param roomId 用户所在房间
+     * @return 棋盘信息
+     */
     @Override
     public ChessBoard overGameRequest(Long userId, Long roomId) {
         ChessWebSocketHandler.checkWebSocketConnection(userId);
@@ -281,13 +288,15 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         int type = checkDropPermission(userId, room, false);
         // 请求认输，使用websocket通知对面，更新棋盘状态，但不更新棋盘当前用户
         room.getChessBoard().setStatus(ChessBoardStatus.End);
-        int resignMode = type == ChessBoard.BLACK ? OVER_BLACK_RESIGN_MODE : OVER_WHITE_RESIGN_MODE;
-        Object res = buildRes(roomId, resignMode);
+        String winnerColor = type == ChessBoard.WHITE ? Constants.BLACK : Constants.WHITE;
+        Object res = buildRes(roomId, OVER_RESIGN_MODE, winnerColor);
+        // 如果不是人机对战，那就通知对方
         if (!scheduler.isKataRoom(roomId)) {
-            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getBlackPlayerId(), res, WebSocketResult.CHESS_STOP);
-            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), res, WebSocketResult.CHESS_STOP);
-        } else {
-            ChessWebSocketHandler.sendResult(userId, res, WebSocketResult.CHESS_STOP);
+            if (type == ChessBoard.BLACK) {
+                ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), res, WebSocketResult.CHESS_STOP);
+            } else {
+                ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getBlackPlayerId(), res, WebSocketResult.CHESS_STOP);
+            }
         }
         logger.info("user {} resigned!", userId);
         return null;
@@ -325,8 +334,8 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         ChessWebSocketHandler.sendResult(userId, null, WebSocketResult.CHESS_READY_STOP);
         KataCount res = kataService.endCount(room.getRoomId());
         JSONObject object = new JSONObject();
-        object.put("white", res.getWhite());
-        object.put("black", res.getBlack());
+        object.put(Constants.WHITE, res.getWhite());
+        object.put(Constants.BLACK, res.getBlack());
         return object;
     }
 

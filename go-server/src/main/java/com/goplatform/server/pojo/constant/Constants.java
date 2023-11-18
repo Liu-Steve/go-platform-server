@@ -18,4 +18,6 @@ public class Constants {
 
     public static String WHITE = "white";
 
+    public static String EQUAL = "equal";
+
 }
