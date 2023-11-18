@@ -9,7 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -65,6 +67,10 @@ public class KataAgentService {
             throw new KataGoException(ExceptionEnum.ROOM_ERROR, String.valueOf(roomId));
         }
         return agent.count();
+    }
+
+    public Set<Long> listRoom() {
+        return roomAgents.keySet();
     }
 
 }
