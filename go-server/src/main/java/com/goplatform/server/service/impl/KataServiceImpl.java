@@ -41,14 +41,19 @@ public class KataServiceImpl implements KataService {
     @SuppressWarnings("unchecked")
     public KataCount endCount(Long roomId) {
 
+        try {
+            Thread.sleep(6000);
+        } catch (Exception e) {
+            System.out.println();
+        }
         logger.debug("AI begin to count result int room {}", roomId);
         Result forObject = restTemplate.getForObject(baseUrl + endCountPath + roomId, Result.class);
         if (forObject == null) {
             throw new GoServerException(ExceptionEnum.KATA_GET_FAILED);
         }
-        LinkedHashMap<String, Integer> result;
+        LinkedHashMap<String, Double> result;
         try {
-            result = (LinkedHashMap<String, Integer>) forObject.getResult();
+            result = (LinkedHashMap<String, Double>) forObject.getResult();
         } catch (Exception e) {
             throw new GoServerException(ExceptionEnum.KATA_GET_FAILED);
         }

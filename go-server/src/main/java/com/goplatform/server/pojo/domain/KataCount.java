@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class KataCount {
-    private int black;
+    private double black;
 
-    private int white;
+    private double white;
 }

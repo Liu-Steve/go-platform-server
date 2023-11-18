@@ -1,7 +1,8 @@
 package com.goplatform.server.pojo.domain;
 
-import com.goplatform.server.pojo.constant.Player;
+import lombok.Data;
 
+@Data
 public class OneMove {
    int player;
 

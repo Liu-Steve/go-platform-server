@@ -67,6 +67,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         if (!scheduler.isKataRoom(roomId)) {
             ChessWebSocketHandler.sendResult(config.getBlackPlayerId(), chessBoard, WebSocketResult.CHESS_START);
             ChessWebSocketHandler.sendResult(config.getWhitePlayerId(), chessBoard, WebSocketResult.CHESS_WAIT);
+            logger.info("user: {} create ChessBoard success", roomId);
             return room;
         }
         // 如果是PVE 首先初始化AI
@@ -151,6 +152,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
             // 如果AI无法下棋，则AI直接认输
             logger.info("AI drop ({}, {}) color: {} failed human win!", r, c, color);
             int resignMode = type == ChessBoard.BLACK ? OVER_BLACK_RESIGN_MODE : OVER_WHITE_RESIGN_MODE;
+            ChessWebSocketHandler.sendResult(userId, null, WebSocketResult.CHESS_READY_STOP);
             Object res = buildRes(roomId, resignMode);
             ChessWebSocketHandler.sendResult(userId, res, WebSocketResult.CHESS_STOP);
             return false;
@@ -186,7 +188,7 @@ public class ChessBoardServiceImpl implements ChessBoardService {
             ChessDrop kataChessDrop = kataService.gen(roomId, kataColor);
             kataDropChess(userId, roomId, kataChessDrop, kataColor);
             logger.info("user {} stop once success and AI drop over", userId);
-            return null;
+            return room.getChessBoard();
         }
         // 如果对方已经停了一手，则判断两人是否要结束棋局
         if (room.getChessBoard().getStatus().equals(ChessBoardStatus.StopOnce)) {
@@ -195,11 +197,13 @@ public class ChessBoardServiceImpl implements ChessBoardService {
             } else if (type == ChessBoard.WHITE) {
                 room.getChessBoard().setNowPlayer(Player.BLACK_PLAYER);
             }
+            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getBlackPlayerId(), null, WebSocketResult.CHESS_READY_STOP);
+            ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), null, WebSocketResult.CHESS_READY_STOP);
             Object res = buildRes(roomId, OVER_STOP_ONCE_MODE);
             ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getBlackPlayerId(), res, WebSocketResult.CHESS_STOP);
             ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), res, WebSocketResult.CHESS_STOP);
             logger.info("user {} stop once success and over the game!", userId);
-            return null;
+            return room.getChessBoard();
         }
         // 通知对手自己停一手，并也要告知自己，自己停了一手
         if (type == ChessBoard.BLACK) {
@@ -216,16 +220,16 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         // 并清除掉打劫信息
         room.getChessBoard().flushKo();
         logger.info("user {} stop once success!", userId);
-        return null;
+        return room.getChessBoard();
     }
 
     private Object buildRes(Long roomId, int mode) {
-        KataCount res = kataService.endCount(roomId);
         JSONObject object = new JSONObject();
-        object.put("white", res.getWhite());
-        object.put("black", res.getBlack());
         object.put("mode", mode); // 0表示双方停一手结束对局，1表示认输结束对局
         if (mode == OVER_STOP_ONCE_MODE) {
+            KataCount res = kataService.endCount(roomId);
+            object.put("white", res.getWhite());
+            object.put("black", res.getBlack());
             if (res.getWhite() > res.getBlack()) {
                 object.put("winner", "white");
             } else if (res.getWhite() < res.getBlack()) {
@@ -251,6 +255,8 @@ public class ChessBoardServiceImpl implements ChessBoardService {
         // 请求认输，使用websocket通知对面，更新棋盘状态，但不更新棋盘当前用户
         room.getChessBoard().setStatus(ChessBoardStatus.OverRequest);
         int resignMode = type == ChessBoard.BLACK ? OVER_BLACK_RESIGN_MODE : OVER_WHITE_RESIGN_MODE;
+        ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getBlackPlayerId(), null, WebSocketResult.CHESS_STOP);
+        ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), null, WebSocketResult.CHESS_STOP);
         Object res = buildRes(roomId, resignMode);
         ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getBlackPlayerId(), res, WebSocketResult.CHESS_STOP);
         ChessWebSocketHandler.sendResult(room.getChessBoardConfig().getWhitePlayerId(), res, WebSocketResult.CHESS_STOP);
@@ -286,7 +292,17 @@ public class ChessBoardServiceImpl implements ChessBoardService {
     public Object getChessBoardResult(Long userId, Long roomId) {
         ChessWebSocketHandler.checkWebSocketConnection(userId);
         Room room = scheduler.getRoom(roomId);
-        checkDropPermission(userId, room);
+        PublicUtil.checkUserIdValid(userId, userRepository);
+        if (room.getChessBoardConfig() == null || room.getChessBoard() == null) {
+            logger.error("check user {} permission in room {} error chessboard not init", userId, room.getRoomId());
+            throw new GoServerException(ExceptionEnum.CHESS_ROOM_NOT_INIT);
+        }
+
+        if (!Objects.equals(room.getCreateUserId(), userId) && !Objects.equals(room.getSecondUserId(), userId)) {
+            logger.error("check user {} permission in room {} error user not inside room", userId, room.getRoomId());
+            throw new GoServerException(ExceptionEnum.CHESS_USER_PERMISSION_DENY);
+        }
+        ChessWebSocketHandler.sendResult(userId, null, WebSocketResult.CHESS_READY_STOP);
         KataCount res = kataService.endCount(room.getRoomId());
         JSONObject object = new JSONObject();
         object.put("white", res.getWhite());
@@ -307,12 +323,15 @@ public class ChessBoardServiceImpl implements ChessBoardService {
     }
 
     private int checkDropPermission(Long userId, Room room) {
+        logger.debug("begin to check user {} permission in room {}", userId, room.getRoomId());
         PublicUtil.checkUserIdValid(userId, userRepository);
         if (room.getChessBoardConfig() == null || room.getChessBoard() == null) {
+            logger.error("check user {} permission in room {} error chessboard not init", userId, room.getRoomId());
             throw new GoServerException(ExceptionEnum.CHESS_ROOM_NOT_INIT);
         }
 
         if (!Objects.equals(room.getCreateUserId(), userId) && !Objects.equals(room.getSecondUserId(), userId)) {
+            logger.error("check user {} permission in room {} error user not inside room", userId, room.getRoomId());
             throw new GoServerException(ExceptionEnum.CHESS_USER_PERMISSION_DENY);
         }
         // 判断当前用户是黑棋还是白棋
