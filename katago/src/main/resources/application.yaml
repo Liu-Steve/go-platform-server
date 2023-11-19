@@ -1,3 +1,7 @@
 server:
   port: 8083
   forward-headers-strategy: framework
+logging:
+  level:
+    root: info
+    com.goplatform.server: debug
